@@ -27,9 +27,16 @@ from glotk_mer_ksweep import libSeq
 class libSeq_test_case(unittest.TestCase):
     """Tests that libSeq works correctly, like a dictionary
     """
-    def test_score_palindromes_counts(self):
+    def test_libSeq_construction(self):
         myLib = libSeq()
-        print(myLib)
+        values = ["wildcard", "name", "insertAvg", "insertSdev",
+                  "hasInnieArtifact", "isRevComped", "useForContiging",
+                  "scaffRound", "useForGapClosing",
+                  "5p_wiggleRoom", "3p_wiggleRoom"]
+        data = {x: "" for x in values}
+        for key in myLib.keys():
+            data.pop(key)
+        self.assertEqual(data, {})
 
 if __name__ == '__main__':
     unittest.main()

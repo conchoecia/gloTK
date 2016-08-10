@@ -32,22 +32,21 @@ This program will do a few things:
    parameter sweep. Simply put, it runs many assemblies through a user-defined
    parameter range so that the user can find the optimum assembly.
 """
+from collections import UserDict
 
-class libSeq(dict):
+class libSeq(UserDict):
     def __init__(self):
         values = ["wildcard", "name", "insertAvg", "insertSdev",
                   "hasInnieArtifact", "isRevComped", "useForContiging",
                   "scaffRound", "useForGapClosing",
                   "5p_wiggleRoom", "3p_wiggleRoom"]
-        self = {x: "" for x in values}
+        self.data = {x: "" for x in values}
 
     def __repr__(self):
         print_str = "{"
-        for key in self:
-            val = self.get(key)
-            print_str += key
-            print_str += "'{0}': '{1}',".format(key, value)
-        print(print_str)
+        for key in self.data:
+            val = self.data.get(key)
+            print_str += "'{0}': '{1}',".format(key, val)
         print_str = print_str[:-1]
         print_str += "}"
         return print_str
