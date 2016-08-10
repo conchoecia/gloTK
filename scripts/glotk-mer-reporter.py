@@ -17,6 +17,19 @@
 # You should have received a copy of the GNU General Public License
 # along with GloTK.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+
+title: glotk-mer-reporter.py
+authr: darrin schultz
+vrsin: 0.10
+
+v0.10 - Tue Aug  9 17:11:26 PDT 2016
+      - Outputs results in cwd using py-gfm package
+v0.01 - Tue Jul 19 13:59:22 PDT 2016
+      - Analyzes a "diploid_mode 1" run of Meraculous and outputs the results
+
+"""
+
 #import things for rest of program
 import sys
 import argparse
@@ -34,19 +47,6 @@ from functools import partial
 from multiprocessing import cpu_count
 from multiprocessing import Pool
 from multiprocessing.dummy import Pool as ThreadPool
-
-"""
-
-title: glotk-mer-reporter.py
-authr: darrin schultz
-vrsin: 0.01
-
-v0.10 - Tue Aug  9 17:11:26 PDT 2016
-      - Outputs results in cwd using py-gfm package
-v0.01 - Tue Jul 19 13:59:22 PDT 2016
-      - Analyzes a "diploid_mode 1" run of Meraculous and outputs the results
-
-"""
 
 class FullPaths(argparse.Action):
     """Expand user- and relative-paths"""
