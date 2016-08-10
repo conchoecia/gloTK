@@ -61,4 +61,15 @@ class merParse:
     """
     def __init__(inputFile):
         self.input = inputFile
-        self.params = None
+        self.params = {"lib_seq": [],
+                       "genome_size": None,
+                       "mer_size": None,
+                       "min_depth_cutoff": None,
+                       "num_prefix_blocks": None,
+                       "diploid_mode": None,
+                       "bubble_depth_threshold": None,
+                       "strict_haplotypes": None,
+                       "no_read_validation": 0,
+                       "fallback_on_est_insert_size": 0,
+                       "gap_close_aggressive": 0,
+                       "gap_close_rpt_depth_ratio": 2.0,
