@@ -22,30 +22,16 @@ This class tests the classes and methods for glotk-mer-ksweep.py
 """
 
 import unittest
-from glotk_mer_ksweep import libSeq, merParse
+from gloTK import MerParse, LibSeq
 from time import strftime as tfmt
+import os
 import re
 import ast
-
-
-class libSeq_test_case(unittest.TestCase):
-    """Tests that libSeq works correctly, like a dictionary
-    """
-    def test_libSeq_construction(self):
-        myLib = libSeq()
-        values = ["wildcard", "name", "insertAvg", "insertSdev", "avgReadLn",
-                  "hasInnieArtifact", "isRevComped", "useForContiging",
-                  "scaffRound", "useForGapClosing",
-                  "5p_wiggleRoom", "3p_wiggleRoom"]
-        data = {x: "" for x in values}
-        for key in myLib.keys():
-            data.pop(key)
-        self.assertEqual(data, {})
 
 class merParse_test_case(unittest.TestCase):
     """Tests that the merParse class works correctly"""
     def setUp(self):
-        self.configPath = "ksweep_test.config"
+        self.configPath = os.path.join(os.path.abspath(os.path.dirname(__file__)),"ksweep_test.config")
         self.sweep = "mer_size"
         self.sStart = 21
         self.sStop = 75
@@ -54,7 +40,7 @@ class merParse_test_case(unittest.TestCase):
         self.asSI = 5
         self.genus = "Malacosteus"
         self.species = "niger"
-        self.myParse = merParse(self.configPath, self.sweep,
+        self.myParse = MerParse(self.configPath, self.sweep,
                                 self.sStart, self.sStop,
                                 self.sInterval)
 
@@ -119,7 +105,7 @@ class merParse_test_case(unittest.TestCase):
           - if sStart >= sStop:
         """
         with self.assertRaises(AttributeError):
-            self.myParse = merParse(self.configPath, self.sweep,
+            self.myParse = MerParse(self.configPath, self.sweep,
                                 self.sStop, self.sStart, self.sInterval)
 
     def test_sweep_supported(self):
@@ -132,11 +118,11 @@ class merParse_test_case(unittest.TestCase):
         """
         #shouldn't work with an unknown string
         with self.assertRaises(AttributeError):
-            self.myParse = merParse(self.configPath, "noodles",
+            self.myParse = MerParse(self.configPath, "noodles",
                                 self.sStop, self.sStart, self.sInterval)
         #and it shouldn't work with a number
         with self.assertRaises(AttributeError):
-            self.myParse = merParse(self.configPath, 5,
+            self.myParse = MerParse(self.configPath, 5,
                                 self.sStop, self.sStart, self.sInterval)
 
     def test_sweep_mer_size_odd(self):
@@ -149,10 +135,10 @@ class merParse_test_case(unittest.TestCase):
           - if evens:
         """
         with self.assertRaises(AttributeError):
-            self.myParse = merParse(self.configPath, 5, 21, 27, 3)
+            self.myParse = MerParse(self.configPath, 5, 21, 27, 3)
 
     ############################################################################
-    #                          myParse.name_gen() Tests
+    #                          MerParse.name_gen() Tests
     ############################################################################
     def test_name_gen_basic(self):
         """This tests that the myParse.name_gen() method works in instances
@@ -189,7 +175,7 @@ class merParse_test_case(unittest.TestCase):
         as_d = tfmt("%Y%m%d")
         k = 33
         myParseShouldEqual = "ab015_{}_ME_Malacosteus_k{}".format(as_d, k)
-        self.myParse2 = merParse(self.configPath, self.sweep,
+        self.myParse2 = MerParse(self.configPath, self.sweep,
                                 self.sStart, self.sStop,
                                 self.sInterval, asPrefix = "ab",
                                 genus = self.genus, asSI=5)
@@ -211,7 +197,7 @@ class merParse_test_case(unittest.TestCase):
         as_d = tfmt("%Y%m%d")
         k = 57
         myParseShouldEqual = "xx856_{}_ME_niger_k{}".format(as_d, k)
-        self.myParse2 = merParse(self.configPath, self.sweep,
+        self.myParse2 = MerParse(self.configPath, self.sweep,
                                 self.sStart, self.sStop,
                                 self.sInterval, asPrefix = "xx",
                                 species = self.species, asSI=5)
@@ -241,7 +227,7 @@ class merParse_test_case(unittest.TestCase):
                          "\"","'", ":", ";", "?", "/", ">", ".", "<", ","]
         #http://stackoverflow.com/questions/12516881
         with self.assertRaises(OSError) as raises_cm:
-            self.myParse3 = merParse(self.configPath, self.sweep,
+            self.myParse3 = MerParse(self.configPath, self.sweep,
                                 self.sStart, self.sStop,
                                 self.sInterval, asPrefix = "xx",
                                 species = species,
@@ -253,15 +239,15 @@ class merParse_test_case(unittest.TestCase):
         list_list = ast.literal_eval(string_list)
         self.assertEqual(list_list, illegal_chars)
     ############################################################################
-    #                      DONE myParse.name_gen() Tests DONE
+    #                      DONE MerParse.name_gen() Tests DONE
     ############################################################################
 
     ############################################################################
-    #                       myParse.sweeper_output() Tests
+    #                       MerParse.sweeper_output() Tests
     ############################################################################
     @unittest.skip("only run this if you want to see output files in your terminal")
     def test_sweeper_output(self):
-        myParseSweeper = merParse(self.configPath, self.sweep,
+        myParseSweeper = MerParse(self.configPath, self.sweep,
                                 self.sStart, self.sStop,
                                 self.sInterval, asPrefix = "xx",
                                 species = self.species,
