@@ -1,0 +1,91 @@
+#!/usr/bin/env python
+# gloTK - Genomes of Luminous Organisms Toolkit
+# Copyright (c) 2015-2016 Darrin Schultz. All rights reserved.
+#
+# This file is part of gloTK.
+#
+# GloTK is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GloTK is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GloTK.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+
+title: glotk-sweep
+authr: darrin schultz
+
+This program:
+1. Reads in a meraculous config file and outputs all of the associated config
+   files to $PWD/configs
+2. The name of each run and the path to the directory is passed to a
+   multiprocessing core that controls which assemblies are executed and when.
+3. Each assembly is executed.
+
+"""
+
+#import things for rest of program
+import sys
+import argparse
+
+#multiprocessing stuff
+from functools import partial
+from multiprocessing import cpu_count
+from multiprocessing import Pool
+from multiprocessing.dummy import Pool as ThreadPool
+
+def parse_arguments():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("-c", "--censor",
+                        type=str,
+                        nargs='+',
+                        help="""list of strings to censor for sending docs to
+                        non-collaborators""")
+    parser.add_argument("-q", "--quiet",
+                        action='store_true')
+
+    options = parser.parse_args()
+    return options
+
+def main():
+    """1. Parse args
+    2. Figure out which directories are actually meraculous run directories
+    3. Make an instance for each directory and generate a report
+    """
+    home = os.getcwd()
+    options = parse_arguments()
+    print(options)
+    print()
+
+    #get a list of all directories in the cwd
+    dirs = [direc for direc in os.listdir(home) if os.path.isdir(direc)]
+    #instantiate all of the classes that we will be using in parallel processing
+    instances = []
+    for each in dirs:
+        thisInstance = meraculousRunAnalyzer(each, options.censor, options.quiet)
+        #only process the instances that are meraculous directories
+        if thisInstance.isMer:
+            instances.append(thisInstance)
+
+    if len(instances) == 0:
+        print("There are no meraculous folders in this directory. Exiting")
+    elif len(instances) > 0:
+        # run the program for each instance
+        #process each file sequentially using max number of threads
+        #determine the pool size to work with the unique sample names
+        pool_size = determine_pool_size(instances)
+        pool = ThreadPool(pool_size)
+        results = pool.map(run_merReport_dummy, instances)
+        pool.close()
+        pool.join()
+
+if __name__ == "__main__":
+    sys.exit(main())
+
