@@ -42,6 +42,17 @@ from multiprocessing import Pool
 from multiprocessing.dummy import Pool as ThreadPool
 
 def parse_arguments():
+    """For stage 1, the necessary arguments for the MerParse class are:
+      - inputFile
+      - sweep
+      - sStart
+      - sStop
+      - sInterval
+      - asPrefix
+      - asSI
+      - genus
+      - species
+    """
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("-c", "--censor",
                         type=str,
