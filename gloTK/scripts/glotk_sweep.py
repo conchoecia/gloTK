@@ -222,14 +222,8 @@ def main():
        multiprocessing core that controls which assemblies are executed and when.
 
     """
-    print(sys.argv)
-    if len(sys.argv) <= 1:
-        print("""Please input some options for this program or see how it is used.""")
-        parser = CommandLine(["--help"])
-    else :
-        parser = CommandLine()
-        myArgs = parser.args
-        print(myArgs)
+    parser = CommandLine()
+    myArgs = parser.args
 
     #Figure out how many processors to give to each assembly since we will be
     # running some things in parallel. The MerParse class will handle overriding
