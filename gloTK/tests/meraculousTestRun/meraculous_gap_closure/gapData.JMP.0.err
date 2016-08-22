@@ -1,0 +1,61 @@
+ -s=/usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_ono/scaffolds.srf -c=/usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_ono/contigs.fa -R=1 -f=/usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_merblast/JMP.fastq.info.0 -b=/usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_merblast/blastMap.JMP.f0.merged -m=21 -i=3333:370
+Reading scaffold report file: /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_ono/scaffolds.srf...
+Done.
+Reading blast map file: /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_merblast/blastMap.JMP.f0.merged...
+Done.
+Unused alignments:
+	5-TRUNCATED	36629
+	3-TRUNCATED	63395
+	NO_ASSOCIATED_GAP	412
+Total reads placed in gaps = 4047 (aligned) + 26545 (projected)
+Reading sequence file /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_import/JMP.fastq.0_00001...
+Done.
+Reading /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_ono/contigs.fa...
+Done.
+gap0 [Scaffold3:Contig13.3<-->Contig32.3]: 739 reads assigned.
+gap1 [Scaffold3:Contig32.5<-->Contig16.3]: 793 reads assigned.
+gap2 [Scaffold3:Contig16.5<-->Contig28.3]: 677 reads assigned.
+gap3 [Scaffold3:Contig28.5<-->Contig1.3]: 696 reads assigned.
+gap4 [Scaffold3:Contig1.5<-->Contig31.5]: 608 reads assigned.
+gap5 [Scaffold3:Contig31.3<-->Contig37.3]: 600 reads assigned.
+gap6 [Scaffold3:Contig37.5<-->Contig23.5]: 605 reads assigned.
+gap7 [Scaffold3:Contig23.3<-->Contig26.5]: 718 reads assigned.
+gap8 [Scaffold3:Contig26.3<-->Contig3.5]: 656 reads assigned.
+gap9 [Scaffold3:Contig3.3<-->Contig11.3]: 671 reads assigned.
+gap10 [Scaffold3:Contig11.5<-->Contig20.3]: 645 reads assigned.
+gap11 [Scaffold3:Contig20.5<-->Contig18.5]: 648 reads assigned.
+gap12 [Scaffold3:Contig18.3<-->Contig47.3]: 585 reads assigned.
+gap13 [Scaffold3:Contig47.5<-->Contig45.3]: 652 reads assigned.
+gap14 [Scaffold3:Contig45.5<-->Contig46.3]: 569 reads assigned.
+gap15 [Scaffold3:Contig46.5<-->Contig30.3]: 558 reads assigned.
+gap16 [Scaffold3:Contig30.5<-->Contig2.3]: 704 reads assigned.
+gap17 [Scaffold3:Contig2.5<-->Contig6.3]: 697 reads assigned.
+gap18 [Scaffold3:Contig6.5<-->Contig15.3]: 665 reads assigned.
+gap19 [Scaffold3:Contig15.5<-->Contig27.3]: 615 reads assigned.
+gap20 [Scaffold3:Contig27.5<-->Contig29.3]: 551 reads assigned.
+gap21 [Scaffold3:Contig29.5<-->Contig36.3]: 740 reads assigned.
+gap22 [Scaffold3:Contig36.5<-->Contig21.3]: 756 reads assigned.
+gap23 [Scaffold3:Contig21.5<-->Contig7.5]: 615 reads assigned.
+gap24 [Scaffold3:Contig7.3<-->Contig10.5]: 690 reads assigned.
+gap25 [Scaffold3:Contig10.3<-->Contig41.3]: 666 reads assigned.
+gap26 [Scaffold3:Contig41.5<-->Contig34.5]: 648 reads assigned.
+gap27 [Scaffold3:Contig34.3<-->Contig43.5]: 716 reads assigned.
+gap28 [Scaffold3:Contig43.3<-->Contig9.5]: 725 reads assigned.
+gap29 [Scaffold3:Contig9.3<-->Contig22.3]: 616 reads assigned.
+gap30 [Scaffold3:Contig22.5<-->Contig33.5]: 593 reads assigned.
+gap31 [Scaffold3:Contig33.3<-->Contig40.5]: 653 reads assigned.
+gap32 [Scaffold3:Contig40.3<-->Contig5.5]: 653 reads assigned.
+gap33 [Scaffold3:Contig5.3<-->Contig14.5]: 647 reads assigned.
+gap34 [Scaffold3:Contig14.3<-->Contig4.3]: 768 reads assigned.
+gap35 [Scaffold3:Contig4.5<-->Contig25.3]: 697 reads assigned.
+gap36 [Scaffold3:Contig25.5<-->Contig35.5]: 571 reads assigned.
+gap37 [Scaffold3:Contig35.3<-->Contig24.5]: 588 reads assigned.
+gap38 [Scaffold3:Contig24.3<-->Contig12.5]: 643 reads assigned.
+gap39 [Scaffold3:Contig12.3<-->Contig39.5]: 685 reads assigned.
+gap40 [Scaffold3:Contig39.3<-->Contig8.5]: 641 reads assigned.
+gap41 [Scaffold3:Contig8.3<-->Contig17.5]: 749 reads assigned.
+gap42 [Scaffold3:Contig17.3<-->Contig42.5]: 949 reads assigned.
+gap43 [Scaffold3:Contig42.3<-->Contig38.5]: 980 reads assigned.
+gap44 [Scaffold3:Contig38.3<-->Contig19.3]: 951 reads assigned.
+Done. 
+Exit [0]

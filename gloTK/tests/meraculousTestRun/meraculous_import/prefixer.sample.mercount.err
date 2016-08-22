@@ -1,0 +1,14 @@
+Arg 0: /usr/local/bin/Meraculous_2.2.2.4alt/bin/merCounterTh_56mer
+Arg 1: 21
+Arg 2: 1
+Arg 3: 4
+Arg 4: A+C+G+T
+Arg 5: /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_import/prefixer.sample.mercount
+Arg 6: /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_import/prefixer.sample.info
+Arg 7: 1
+..Done with counting
+Histogram of counts 
+||1	5534	|XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+||2	44	|
+End histogram of counts
+Exit [0]

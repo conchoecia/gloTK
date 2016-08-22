@@ -1,0 +1,15 @@
+loading mers from /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_mercount/mercount.0.TC.1loading mers from /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_mercount/mercount.0.TC.3
+loading mers from /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_mercount/mercount.0.TC.2
+
+loading mers from /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_mercount/mercount.0.TC.0
+......done loading mers
+Tue Jun 28 15:44:32 2016
+processing contigs
+tallying mer extensions
+.
+Found 50 total contigs spanning 200871 total bases
+Read 201211 mers as input
+Added 80011 mers to the hash ( after filtering for depth + prefix )
+Printed 50 mers.
+Done.
+Exit [0]

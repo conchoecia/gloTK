@@ -1,0 +1,11 @@
+local_max_retries	0 
+min_depth_cutoff	7 
+lib_seq	frags.fastq.25K FRA 180 10 101 0 0 1 1 1 0 0 
+lib_seq	jumps.fastq.25K JMP 3000 500 101 1 1 1 2 1 0 0 
+local_num_procs	4 
+genome_size	0.0002 
+diploid_mode	0 
+use_cluster	0 
+mer_size	21 
+no_read_validation	1 
+num_prefix_blocks	4 

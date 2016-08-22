@@ -20,15 +20,23 @@ Currently there are only scripts for one assembler:
 
 ## Install
 
-You can execute the scripts by their names if you add the install directory to your `$PATH` variable. For example, in my `~/.bash_profile` file, I added this line to the end:
+You can install the `gloTK` package on your linux machine by typing
+`pip install gloTK` in your terminal.
 
-```
-PATH=$PATH:/home/<my_username>/git/gloTK/scripts
-```
+Major releases of `gloTK` are uploaded to the [Python Package Index](https://pypi.python.org/pypi/gloTK).
 
 ## Scripts
 
-- *mer_reporter.py*
+To use these programs, install `gloTK` as described above and type `glotk` into
+your terminal. If you hit the `tab` key a few times your computer should try to
+autocomplete and you will see a few options:
+
+- **glotk-mer-reporter.py**
   - Generates HTML reports of all Meraculous assemblies found within
     the current working directory _(CWD)_. Collates all relevant files and images
     into a `meraculous_reports` directory in the _CWD_.
+- **glotk-sweep**
+  - This allows the user to input a single meraculous config file, and to define 
+    parameters to sweep on and optomize. Currently this program supports sweeping 
+    on `mer_size` and `bubble_depth_threshold`. Typing `glotk-sweep` into your
+    terminal after installing will give you more details.
