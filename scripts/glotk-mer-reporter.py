@@ -67,7 +67,7 @@ def parse_arguments():
     options = parser.parse_args()
     return options
 
-class meraculousRunAnalyzer:
+class merRunAnalyzer:
     def __init__(self, directory, censor, quiet=False):
         """In a future edit, change this method to auto-detect whether the
         run is diploid mode 1, 2, or 3

@@ -28,12 +28,19 @@ setup(name='gloTK',
           ],
       license='GPLv3',
       provides=['gloTK'],
-      packages=['gloTK'],
+      packages=['gloTK', 'gloTK.scripts'],
       install_requires=[
           #MerParse - None
           #tests - nose (see below)
+          #MerRunAnalyzer
+          "py_gfm",
+          "pymdown-extensions",
+          "markdown"
       ],
       test_suite='nose.collector',
       tests_require=['nose'],
+      entry_points = {
+            'console_scripts': ['glotk-sweep=gloTK.scripts.glotk_sweep:main'],
+        },
       zip_safe=False,
       include_package_data=True)

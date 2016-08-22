@@ -49,8 +49,14 @@ class MerParse:
     4. Return a list of filepaths for the main method to use for assembly and
         report generation.
 
+    Useage example:
+    myMerParser = MerParse(<params>)
+    myPaths = myMerParser.sweeper_output()
+
+    Now the myPaths object contains a dict of run names and absolute paths for
+        the config files.
     """
-    def __init__(self, inputFile, sweep, sStart, sStop, sInterval,
+    def __init__(self, inputFile, sweep, sStart, sStop, sInterval, lnProcs,
                  asPrefix = "as", asSI = 0, genus = None, species = None):
         # --------------- Config File Parameters -------------------------------
         self.inputFile = inputFile
@@ -132,6 +138,8 @@ class MerParse:
         self.find_illegal_characters(genus, species)
         self.as_g = genus if genus else None
         self.as_s = species if species else None
+        # local number of processors (number of processors for one run)
+        self.lnProcs = lnProcs
 
         #-----------------------Directory Parameters---------------------------
         self.cwd = os.getcwd()
@@ -225,9 +233,6 @@ class MerParse:
         return {name:os.path.join(config_dir, name)
                 for name in asName_asSweep_dict}
 
-
-
-
     def assign(self, dict_name, key, value):
         """This assigns an input string to either a float or int and saves it in
         the config params as such"""
@@ -320,3 +325,6 @@ class MerParse:
                             number in the config file. Please use only positive
                             integers or positive floats in the config file and try
                             again.""".format(key))
+        # override the number of procs based on parallelism controlled in
+        #  gloTK/scripts/glotk_sweep.py
+        self.params["local_num_procs"] = self.lnProcs

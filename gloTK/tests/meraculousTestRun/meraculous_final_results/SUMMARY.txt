@@ -1,0 +1,30 @@
+Assembly_dir: /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s
+
+== Key Parameters ==
+
+Library info:
+        Name  Insert_estimated Insert_calculated    For_contigs?   For_scaffolding?(round)  For_gap-closure?
+         FRA               180               176               y                         1                 y
+         JMP              3000              3333               y                         2                 y
+
+Mer_size: 21
+
+Min_depth: 7
+
+
+== Input Data Summary ==
+ 
+         lib     estNumReads     readLen estTotalSeq    qAvg [ min - max ] pctQ20Bases estQ20Depth 
+         FRA          210000       101.0       0.0Gb    28.2 [   0 -  40 ]      73.93%        78.4
+         JMP          230000       101.0       0.0Gb    25.3 [   0 -  34 ]      80.67%        93.7
+
+
+== Assembly Stats ===
+
+Description     	cnt	total	min	max	N50 stats
+------------------------------------------------------------------------------
+Final Scaffolds		1	0.2Mb	200.2Kb	200.2Kb	1 > 200.2Kb totalling 0.2Mb
+Final Contigs		1	0.2Mb	200.2Kb	200.2Kb	1 > 200.2Kb totalling 0.2Mb
+Starting UUtigs		50	0.2Mb	0.0Kb	25.4Kb	8 > 8.5Kb totalling 0.1Mb
+
+

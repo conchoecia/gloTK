@@ -1,0 +1,29 @@
+loading mers from /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_mercount/mercount.0.TC.1loading mers from /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_mercount/mercount.0.TC.3
+
+.loading mers from /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_mercount/mercount.0.TC.0
+.loading mers from /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_mercount/mercount.0.TC.2
+....done loading mers
+Tue Jun 28 15:43:42 2016
+tallying extensions
+tallying mer extensions
+tallying mer extensionstallying mer extensionstallying mer extensions
+
+.
+
+.
+....................................................................................................................................................................................................
+.......
+...............................................................................................................................................................................................
+...........
+.............................................................................................dumping mers...
+dumping /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_mergraph/mergraph.0.TC.0 0 to 3072
+dumping /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_mergraph/mergraph.0.TC.1 3073 to 6145
+dumping /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_mergraph/mergraph.0.TC.2 6146 to 9218
+dumping /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_mergraph/mergraph.0.TC.3 9219 to 12287
+Found 500000 total reads spanning 50500000 total bases
+Read 201211 mers as input
+Added 80011 mers to the hash ( after filtering for depth + prefix )
+Excluded 0 mers for having no extensions
+Printed 80011 mers and their corresponding count graph.
+Done.
+Exit [0]

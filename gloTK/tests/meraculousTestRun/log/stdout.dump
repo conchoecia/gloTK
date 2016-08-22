@@ -1,0 +1,8 @@
+Exit [0]
+Exit [0]
+Exit [0]
+Exit [0]
+Exit [0]
+Use of uninitialized value $maxSize in numeric gt (>) at /usr/local/bin/Meraculous_2.2.2.4alt/lib/M_Utility.pm line 906.
+Use of uninitialized value $maxSize in numeric gt (>) at /usr/local/bin/Meraculous_2.2.2.4alt/lib/M_Utility.pm line 906.
+Use of uninitialized value $maxSize in numeric gt (>) at /usr/local/bin/Meraculous_2.2.2.4alt/lib/M_Utility.pm line 906.

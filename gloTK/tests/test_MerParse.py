@@ -40,9 +40,10 @@ class merParse_test_case(unittest.TestCase):
         self.asSI = 5
         self.genus = "Malacosteus"
         self.species = "niger"
+        self.lnProcs = 27
         self.myParse = MerParse(self.configPath, self.sweep,
                                 self.sStart, self.sStop,
-                                self.sInterval)
+                                self.sInterval, self.lnProcs)
 
         self.correctly_parsed_ls1 = {"wildcard": "/mydir/fwd_data*.1.fastq.gz,/mydir/rev_data*.2.fastq.gz",
                             "name": "SP2013",
@@ -106,7 +107,8 @@ class merParse_test_case(unittest.TestCase):
         """
         with self.assertRaises(AttributeError):
             self.myParse = MerParse(self.configPath, self.sweep,
-                                self.sStop, self.sStart, self.sInterval)
+                                self.sStop, self.sStart, self.sInterval,
+                                self.lnProcs)
 
     def test_sweep_supported(self):
         """Checks to make sure that an error is raised if something that isn't
@@ -119,11 +121,13 @@ class merParse_test_case(unittest.TestCase):
         #shouldn't work with an unknown string
         with self.assertRaises(AttributeError):
             self.myParse = MerParse(self.configPath, "noodles",
-                                self.sStop, self.sStart, self.sInterval)
+                                self.sStop, self.sStart, self.sInterval,
+                                self.lnProcs)
         #and it shouldn't work with a number
         with self.assertRaises(AttributeError):
             self.myParse = MerParse(self.configPath, 5,
-                                self.sStop, self.sStart, self.sInterval)
+                                self.sStop, self.sStart, self.sInterval,
+                                self.lnProcs)
 
     def test_sweep_mer_size_odd(self):
         """tests to make sure that all off the mer_sizes for sweep are odd
@@ -135,7 +139,7 @@ class merParse_test_case(unittest.TestCase):
           - if evens:
         """
         with self.assertRaises(AttributeError):
-            self.myParse = MerParse(self.configPath, 5, 21, 27, 3)
+            self.myParse = MerParse(self.configPath, 5, 21, 27, 3, self.lnProcs)
 
     ############################################################################
     #                          MerParse.name_gen() Tests
@@ -177,7 +181,8 @@ class merParse_test_case(unittest.TestCase):
         myParseShouldEqual = "ab015_{}_ME_Malacosteus_k{}".format(as_d, k)
         self.myParse2 = MerParse(self.configPath, self.sweep,
                                 self.sStart, self.sStop,
-                                self.sInterval, asPrefix = "ab",
+                                self.sInterval, self.lnProcs,
+                                asPrefix = "ab",
                                 genus = self.genus, asSI=5)
         self.assertEqual(myParseShouldEqual, self.myParse2.name_gen(15, k))
 
@@ -199,7 +204,8 @@ class merParse_test_case(unittest.TestCase):
         myParseShouldEqual = "xx856_{}_ME_niger_k{}".format(as_d, k)
         self.myParse2 = MerParse(self.configPath, self.sweep,
                                 self.sStart, self.sStop,
-                                self.sInterval, asPrefix = "xx",
+                                self.sInterval, self.lnProcs,
+                                asPrefix = "xx",
                                 species = self.species, asSI=5)
         self.assertEqual(myParseShouldEqual, self.myParse2.name_gen(856, k))
 
@@ -229,7 +235,8 @@ class merParse_test_case(unittest.TestCase):
         with self.assertRaises(OSError) as raises_cm:
             self.myParse3 = MerParse(self.configPath, self.sweep,
                                 self.sStart, self.sStop,
-                                self.sInterval, asPrefix = "xx",
+                                self.sInterval, self.lnProcs,
+                                asPrefix = "xx",
                                 species = species,
                                 genus = genus, asSI=5)
 
