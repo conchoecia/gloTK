@@ -98,25 +98,42 @@ class MerParse:
         # -------------------------Sweep Parameters-----------------------------
         self.sweep = sweep
         self.sweep_support_int = ["mer_size", "bubble_depth_threshold"]
+        self.sStart = sStart
+        self.sStop = sStop
+        self.sInterval = sInterval
+
+            #make sure that they're supported sweep types
         if self.sweep not in self.sweep_support_int:
             raise AttributeError("""{0} is not a currently supported sweep-able
             parameter. Please choose one of the following parameters or update
             the software at https://github.com/cypridina/gloTK. {1}""".format(
                 self.sweep, self.sweep_support))
-        if sStart >= sStop:
+
+            #if they're supposed to be ints, convert them to ints first
+        if self.sweep in self.sweep_support_int:
+            for each in ["sStart", "sStop", "sInterval"]:
+                setattr(self, each, int(getattr(self, each)))
+                attr=getattr(self, each)
+                if attr % 1 != 0:
+                    raise AttributeError("""One or more of your sweep parameters
+                    contains float numbers {0}, but you chose to sweep on a parameter
+                    that requires ints {1}. Please try again.""".format(each, self.sweep))
+
+        if self.sStart >= self.sStop:
             raise AttributeError("""The input sweep start value is greater than
             or equal to the sweep stop value. {0}>={1}. Please make sweep start
-            less than sweep stop.""".format(sStart, sStop))
-        if ((sStop - sStart) % sInterval) != 0:
+            less than sweep stop.""".format(self.sStart, self.sStop))
+        if ((self.sStop - self.sStart) % self.sInterval) != 0:
             raise AttributeError("""Your sweep interval does not end on your
             sweep stop, and is off by {0}. Try increasing or decreasing your
-            sweep stop by that much.""".format(sInterval - ((sStop - sStart) % sInterval)))
+            sweep stop by that much.""".format(self.sInterval - ((self.sStop - self.sStart) % self.sInterval)))
+                #------------------------------Sweep List-------------------------------
         # Generate list for the sweep parameters. Current implementation only
         #   sweeps through ints, so no special processing is needed.
         # If sweep is "mer_size", then make sure that none of the values are
         #   even.
         if self.sweep in self.sweep_support_int:
-            sweep_list = [x for x in range(sStart, sStop + sInterval, sInterval)]
+            sweep_list = [x for x in range(self.sStart, self.sStop + self.sInterval, self.sInterval)]
             if self.sweep == "mer_size":
                 evens = [x for x in sweep_list if x % 2 == 0]
                 if evens:
@@ -124,14 +141,11 @@ class MerParse:
                     resulted in the following even numbers: {0}. Please adjust
                     your sweep start, stop, and interval to only contain
                     positive odd integers""".format(evens))
-        self.sList = sweep_list
-        self.sStart = sStart
-        self.sStop = sStop
-        self.sInterval = sInterval
+            self.sList = sweep_list
 
         # -------------------------Name Parameters------------------------------
         self.as_a = asPrefix
-        self.as_i = asSI
+        self.as_i = int(asSI)
         #http://stackoverflow.com/questions/311627/
         self.as_d = tfmt("%Y%m%d")
         self.as_z = "ME"
@@ -141,10 +155,11 @@ class MerParse:
         # local number of processors (number of processors for one run)
         self.lnProcs = lnProcs
 
-        #-----------------------Directory Parameters---------------------------
+        #-----------------------Directory Parameters----------------------------
         self.cwd = os.getcwd()
         #-----------------------Read the config file----------------------------
         self.read_config()
+
 
     def find_illegal_characters(self, genus, species):
         #only allow the user to input ASCII letters and digits (no punctuation)
@@ -237,9 +252,9 @@ class MerParse:
         """This assigns an input string to either a float or int and saves it in
         the config params as such"""
         if key in self.to_int:
-            dict_name[key] = int(value)
+            getattr(self, dict_name)[key] = int(value)
         elif key in self.to_float:
-            dict_name[key] = float(value)
+            getattr(self, dict_name)[key] = float(value)
         else:
             raise ValueError("""The param:value pair, {0}:{1}, has neither been
             identified as an int nor a float. Therefore, we are not able to save
@@ -283,7 +298,7 @@ class MerParse:
                                 self.params["lib_seq"].append(self.libseq_parse(line))
                             else:
                                 if len(split) == 2:
-                                    self.assign(self.params, param, val)
+                                    self.assign("params", param, val)
                                 else:
                                     #make sure there is only a param and value here,
                                     # otherwise there must be an error in the config
@@ -292,7 +307,7 @@ class MerParse:
 
                         elif param in self.diploid_mode:
                             if len(split) == 2:
-                                self.assign(self.diploid_mode, param, val)
+                                self.assign("diploid_mode", param, val)
                             else:
                                 # should only be 2 elements long
                                self.space_error(line)

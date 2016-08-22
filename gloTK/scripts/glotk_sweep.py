@@ -36,11 +36,17 @@ import sys
 import argparse
 import os
 
+#stuff for call shell commands
+import subprocess
+
 #multiprocessing stuff
 from functools import partial
 from multiprocessing import cpu_count
 from multiprocessing import Pool
 from multiprocessing.dummy import Pool as ThreadPool
+
+#import gloTK stuff
+from gloTK import MerParse
 
 #This class is used in argparse to expand the ~. This avoids errors caused on
 # some systems.
@@ -50,21 +56,12 @@ class FullPaths(argparse.Action):
         setattr(namespace, self.dest,
                 os.path.abspath(os.path.expanduser(values)))
 
-class IntOrFloat(argparse.Action):
-    """Convert the input to ints or floats."""
-    def __call__(self, parser, namespace, values, option_string=None):
-            try:
-                float(values)
-                setattr(namespace, self.dest, float(values))
-            except:
-                setattr(namespace, self.dest, int(values))
-
 class CommandLine:
     """
     authors: David Bernick and Darrin Schultz
     Handle the command line, usage and help requests.
     """
-    def __init__(self, inOpts=None) :
+    def __init__(self) :
         """For stage 1, the necessary arguments for the MerParse class are:
           - inputFile
           - sweep
@@ -90,13 +87,10 @@ class CommandLine:
                             help="""The parameter to sweep through in the
                             assembly.""")
         self.parser.add_argument("--sstart",
-                            action=IntOrFloat,
                             help="""The start for the sweep parameter""")
         self.parser.add_argument("--sstop",
-                            action=IntOrFloat,
                             help="""The stop for the sweep parameter""")
         self.parser.add_argument("--sinterval",
-                            action=IntOrFloat,
                             help="""The interval between the sweep start and stop.""")
         self.parser.add_argument("-p", "--prefix",
                             type=str,
@@ -118,7 +112,7 @@ class CommandLine:
                             type=int,
                             default=1,
                             help="""The number of simultaneous assemblies to run.""")
-        self.parser.add_argument("-M", "-maxProcs",
+        self.parser.add_argument("-M", "--maxProcs",
                             type=int,
                             default=cpu_count() - 2,
                             help="""The total number of processers used by all
@@ -132,10 +126,7 @@ class CommandLine:
                             action='store_true')
 
 
-        if inOpts is None :
-            self.args = self.parser.parse_args()
-        else :
-            self.args = self.parser.parse_args(inOpts)
+        self.args = self.parser.parse_args()
 
         # check for input errors
         self._check_errors()
@@ -184,12 +175,12 @@ class MerRunner:
         self.configPath = configPath
         self.cleanup =  cleanup
         self.cwd = os.path.abspath(os.getcwd())
-        self.allAssembliesDir = os.path.join(cwd, "assemblies")
+        self.allAssembliesDir = os.path.join(self.cwd, "assemblies")
         self.thisAssemblyDir = os.path.join(self.allAssembliesDir, self.runName)
-        self.reportsDir = os.path.join(cwd, "reports")
+        self.reportsDir = os.path.join(self.cwd, "reports")
 
         self.callString = "bash run_meraculous.sh -c {0} -dir {1} -cleanup_level {2}".format(
-            self.configPath, self.thisAssemblyDir, self.cleanup)
+            self.configPath, self.runName, self.cleanup)
 
     def meraculous_runner(self):
         """
@@ -203,11 +194,10 @@ class MerRunner:
         After the run is complete, create the meraculous report, passing the
         directory containing the run (aka self.thisAssemblyDir).
         """
-        if not os.path.exists(self.allAssembliesDir):
-            os.makedirs(self.allAssembliesDir)
         #set the dir to temp assembly dir
         os.chdir(self.allAssembliesDir)
 
+        print(self.callString)
         p = subprocess.run(self.callString, shell=True, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE,
                            universal_newlines=True)
@@ -224,7 +214,7 @@ class MerRunner:
         reporter = MerRunAnalyzer(self.thisAssemblyDir, self.cwd, [])
         reporter.generate_report()
 
-def main(myArgs=None):
+def main():
     """
     1. Reads in a meraculous config file and outputs all of the associated config
        files to $PWD/configs
@@ -232,18 +222,20 @@ def main(myArgs=None):
        multiprocessing core that controls which assemblies are executed and when.
 
     """
-
-    if myArgs is None:
+    print(sys.argv)
+    if len(sys.argv) <= 1:
         print("""Please input some options for this program or see how it is used.""")
-        myArgs = CommandLine(["--help"])
+        parser = CommandLine(["--help"])
     else :
-        myArgs = CommandLine(myArgs)
+        parser = CommandLine()
+        myArgs = parser.args
+        print(myArgs)
 
     #Figure out how many processors to give to each assembly since we will be
     # running some things in parallel. The MerParse class will handle overriding
     # whatever is found in the config file in the read_config() method.
     procsPerAssembly = int(myArgs.maxProcs / myArgs.simultaneous)
-    setattr(myArgs.maxProcs)
+    setattr(myArgs, "maxProcs", procsPerAssembly)
 
     # 1. Reads in a meraculous config file and outputs all of the associated config
     #    files to $PWD/configs
@@ -255,6 +247,14 @@ def main(myArgs=None):
                          genus = myArgs.genus,
                          species = myArgs.species)
     configPaths = merparser.sweeper_output()
+
+    #make the assemblies dir ONCE to avoid a race condition for os.makedirs()
+    cwd = os.path.abspath(os.getcwd())
+    allAssembliesDir = os.path.join(cwd, "assemblies")
+    if not os.path.exists(allAssembliesDir):
+        os.makedirs(allAssembliesDir)
+
+
 
     #instantiate all of the classes that we will be using in parallel processing.
     # configPaths above returns a dict with the run name and abs path of config
