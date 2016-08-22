@@ -1,0 +1,40 @@
+Tue Jun 28 15:43:51 PDT 2016
+meraculous4 -M=/usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_mergraph/mergraph.0.CC -D=7
+Reading merGraph from /usr/local/bin/Meraculous_2.2.2.4alt/test/pipeline/run_2016-06-28_15h41m48s/meraculous_mergraph/mergraph.0.CC...
+Done.
+Found 55108 21-mers.
+GA	4697
+GC	4492
+GG	4395
+GT	3899
+AA	3462
+CG	3293
+TG	3286
+TC	3250
+AG	3215
+AC	3187
+CC	3185
+CA	3172
+TA	3128
+AT	2885
+CT	2692
+TT	2646
+XA	37
+GX	35
+XC	33
+XG	29
+XT	24
+XX	18
+AX	10
+TX	10
+CX	6
+FA	6
+TF	4
+GF	4
+FG	2
+FT	2
+AF	1
+FC	1
+CF	1
+FF	1
+Exit [0]

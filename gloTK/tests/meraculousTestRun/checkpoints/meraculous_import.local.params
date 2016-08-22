@@ -1,0 +1,6 @@
+mer_size	21
+local_resume_checkpoint	none
+num_prefix_blocks	4
+lib_qoffset	JMP 33
+lib_qoffset	FRA 33
+local_num_procs	4

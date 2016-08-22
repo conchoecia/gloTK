@@ -1,0 +1,5 @@
+== Input Data Summary ==
+ 
+         lib     estNumReads     readLen estTotalSeq    qAvg [ min - max ] pctQ20Bases estQ20Depth 
+         FRA          210000       101.0       0.0Gb    28.2 [   0 -  40 ]      73.93%        78.4
+         JMP          230000       101.0       0.0Gb    25.3 [   0 -  34 ]      80.67%        93.7

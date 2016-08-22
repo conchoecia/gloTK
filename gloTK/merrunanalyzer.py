@@ -17,19 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GloTK.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-
-title: glotk-mer-reporter.py
-authr: darrin schultz
-vrsin: 0.10
-
-v0.10 - Tue Aug  9 17:11:26 PDT 2016
-      - Outputs results in cwd using py-gfm package
-v0.01 - Tue Jul 19 13:59:22 PDT 2016
-      - Analyzes a "diploid_mode 1" run of Meraculous and outputs the results
-
-"""
-
 #import things for rest of program
 import sys
 import argparse
@@ -42,38 +29,22 @@ import shutil
 import markdown
 from mdx_gfm import GithubFlavoredMarkdownExtension
 
-#multiprocessing stuff
-from functools import partial
-from multiprocessing import cpu_count
-from multiprocessing import Pool
-from multiprocessing.dummy import Pool as ThreadPool
 
-class FullPaths(argparse.Action):
-    """Expand user- and relative-paths"""
-    def __call__(self, parser, namespace, values, option_string=None):
-        setattr(namespace, self.dest,
-                os.path.abspath(os.path.expanduser(values)))
-
-def parse_arguments():
-    parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("-c", "--censor",
-                        type=str,
-                        nargs='+',
-                        help="""list of strings to censor for sending docs to
-                        non-collaborators""")
-    parser.add_argument("-q", "--quiet",
-                        action='store_true')
-
-    options = parser.parse_args()
-    return options
-
-class merRunAnalyzer:
-    def __init__(self, directory, censor, quiet=False):
+class MerRunAnalyzer:
+    """This class generates a report for one meraculous run. It requires a run
+    directory to look for the report, as well as a directory to deposit the
+    report. The generate_report() method will output an HTML file and folder
+    in the report directory. It will use the meraculous run name as the name for
+    the report HTML file and report directory.
+    """
+    def __init__(self, run_directory, output_parent_dir,
+                 censor, quiet=False):
         """In a future edit, change this method to auto-detect whether the
         run is diploid mode 1, 2, or 3
         """
-        self.home = os.path.abspath(directory.strip())
-        self.homeBasename = os.path.basename(directory.strip())
+
+        self.home = os.path.abspath(run_directory.strip())
+        self.reportName = os.path.basename(run_directory.strip())
         self.parent = os.path.dirname(self.home.strip())
 
         #setup the bit to cleanly censor the files
@@ -84,11 +55,12 @@ class merRunAnalyzer:
         self.pattern = re.compile("|".join(self.rep.keys()))
 
         #filename prefix, sanitized with censor method
-        self.outname=self.str_ripper(os.path.basename(self.home))
-        self.merReportsDir = os.path.join(self.parent, "meraculous_reports")
+        self.outname=self._str_ripper(os.path.basename(self.home))
+        self.merReportsDir = os.path.join(self.parent, "reports")
         self.reportDir = os.path.join(self.merReportsDir, self.outname)
 
-        self.isMer = self.is_meraculous()
+        #make sure that the directory is a meraculous directory
+        self.isMer = self._is_meraculous()
         self.quiet = quiet
 
         self.mer_size = None
@@ -96,31 +68,28 @@ class merRunAnalyzer:
         self.genome_size = None
         self.min_depth_cutoff = None
         if self.isMer:
-            self.get_Params()
+            self._get_Params()
 
-    def is_meraculous(self):
-        os.chdir(self.home)
-        subdirs = [dirs.strip() for dirs in os.listdir(self.home) if os.path.isdir(dirs.strip())]
-        print(subdirs)
-        os.chdir(self.parent)
+    def _is_meraculous(self):
+        subdirs = [dirs.strip() for dirs in os.listdir(self.home) if os.path.isdir(os.path.join(self.home,dirs.strip()))]
         return ("log" in subdirs) and ("meraculous_import" in subdirs)
 
-    def call_sys(self, callString, logfile):
+    def _call_sys(self, callString, logfile):
         print("\ncalling command:", file=logfile)
-        print(self.str_ripper(callString), file=logfile)
+        print(self._str_ripper(callString), file=logfile)
         p = subprocess.run(callString, shell=True, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE,
                            universal_newlines=True)
-        output = self.str_ripper(str(p.stdout))
-        err = self.str_ripper(str(p.stderr))
+        output = self._str_ripper(str(p.stdout))
+        err = self._str_ripper(str(p.stderr))
         print(output, file=logfile)
         print(err, file=logfile)
-        if not self.quiet:
-            print(output)
-            print(err)
+        # if not self.quiet:
+        #     print(output)
+        #     print(err)
         return (output, err)
 
-    def make_HTML(self, logfile):
+    def _make_HTML(self, logfile):
         html_filepath = os.path.join(
             self.merReportsDir,
             "{0}_report.html".format(self.outname))
@@ -130,7 +99,7 @@ class merRunAnalyzer:
             html_filepath)
         p = subprocess.run(callString, shell=True)
 
-    def get_Params(self):
+    def _get_Params(self):
         logFile = os.path.join(self.home, "log/meraculous.log")
         grep_list=["mer_size", "diploid_mode",
                    "genome_size", "min_depth_cutoff"]
@@ -141,13 +110,13 @@ class merRunAnalyzer:
                 for query in grep_list:
                     if re.search(query, line):
                         value=line.strip().split()[1]
-                        print("query: {}, value: {}".format(query, value))
+                        #print("query: {}, value: {}".format(query, value))
                         setattr(self, query, value)
                         done[query] = True
                 if False not in done.values():
                     break
 
-    def str_ripper(self, text):
+    def _str_ripper(self, text):
         """Got this code from here:
         http://stackoverflow.com/questions/6116978/python-replace-multiple-strings
 
@@ -164,7 +133,7 @@ class merRunAnalyzer:
         individual report for the instance.
         """
 
-        print("making plot for {}".format(self.outname))
+        print("making HTML report for {}".format(self.outname))
         # make the markdown file to log to while doing analyses
         logfile_filepath = os.path.join(
             self.reportDir,
@@ -196,7 +165,7 @@ class merRunAnalyzer:
         print("", file=logfile)
         print("#### `mercount.png`", file = logfile)
         print("", file=logfile)
-        mercountFromPath = os.path.join(self.homeBasename, "meraculous_mercount/mercount.png")
+        mercountFromPath = os.path.join(self.home, "meraculous_mercount/mercount.png")
         mercountToPath = os.path.join(self.reportDir, "mercount.png")
         mercountHTML = os.path.join(
             os.path.basename(os.path.split(mercountToPath)[0]),
@@ -207,7 +176,7 @@ class merRunAnalyzer:
         print("", file=logfile)
         print("#### `kha.png`", file = logfile)
         print("", file=logfile)
-        khaFromPath = os.path.join(self.homeBasename, "meraculous_mercount/kha.png")
+        khaFromPath = os.path.join(self.home, "meraculous_mercount/kha.png")
         khaToPath = os.path.join(self.reportDir, "kha.png")
         khaHTML = os.path.join(
             os.path.basename(os.path.split(khaToPath)[0]),
@@ -230,7 +199,7 @@ class merRunAnalyzer:
         print("```", file=logfile)
         callString="fasta_stats {0}".format(
             "{}/meraculous_contigs/UUtigs.fa".format(self.home))
-        self.call_sys(callString, logfile)
+        self._call_sys(callString, logfile)
         print("```", file=logfile)
         print("",file=logfile)
 
@@ -256,7 +225,7 @@ class merRunAnalyzer:
                   Meraculous auto-detects this threshold_). - Meraculous Manual""",
                   file=logfile)
             print("", file=logfile)
-            bblFromPath = os.path.join(self.homeBasename,
+            bblFromPath = os.path.join(self.home,
                                        "meraculous_bubble/haplotigs.depth.hist.png")
             bblToPath = os.path.join(self.reportDir, "haplotigs.depth.hist.png")
             bblHTML = os.path.join(
@@ -274,7 +243,7 @@ class merRunAnalyzer:
                 print("", file=logfile)
                 print("```", file=logfile)
                 callString="cat {0}".format(bbl_detect)
-                self.call_sys(callString, logfile)
+                self._call_sys(callString, logfile)
                 print("```", file=logfile)
                 print("", file=logfile)
             else:
@@ -289,7 +258,7 @@ class merRunAnalyzer:
             print("```", file=logfile)
             callString="fasta_stats {0}".format(
             os.path.join(self.home, "meraculous_bubble/haplotigs.fa"))
-            self.call_sys(callString, logfile)
+            self._call_sys(callString, logfile)
             print("```", file=logfile)
             print("", file=logfile)
 
@@ -319,7 +288,7 @@ class merRunAnalyzer:
         print("```", file=logfile)
         callString="fasta_stats {0}".format(
             os.path.join(self.home, "meraculous_gap_closure/final.scaffolds.fa"))
-        self.call_sys(callString, logfile)
+        self._call_sys(callString, logfile)
         print("```", file=logfile)
         print("", file=logfile)
 
@@ -339,7 +308,7 @@ class merRunAnalyzer:
             print("```", file=logfile)
             callString="fasta_stats {0}".format(
                 os.path.join(self.home, "meraculous_gap_closure/final.scaffolds.single-haplotype.fa"))
-            self.call_sys(callString, logfile)
+            self._call_sys(callString, logfile)
             print("```", file=logfile)
             print("", file=logfile)
 
@@ -349,7 +318,7 @@ class merRunAnalyzer:
         print("```", file=logfile)
         callString="fasta_stats {0}".format(
             os.path.join(self.home, "meraculous_final_results/final.scaffolds.fa"))
-        self.call_sys(callString, logfile)
+        self._call_sys(callString, logfile)
         print("```", file=logfile)
         print("", file=logfile)
 
@@ -361,7 +330,7 @@ class merRunAnalyzer:
         print("```", file=logfile)
         callString="cat {0}".format(
             os.path.join(self.home, "log/meraculous.log"))
-        output, err = self.call_sys(callString, logfile)
+        output, err = self._call_sys(callString, logfile)
         print("```", file=logfile)
         print("", file=logfile)
         new_mer_log_path = os.path.join(self.reportDir, "meraculous.log")
@@ -369,76 +338,5 @@ class merRunAnalyzer:
             print(output, file=f)
 
         logfile.close()
-        self.make_HTML(logfile_filepath)
-
-def run_merReport_dummy(instance):
-    """This function is a helper method for merReport.generate_report().
-    Specifically, it just calls the generate_report()
-    function for each instance of class PreqcAnalysis to get around the
-    limitations of the multiprocessing module."""
-    instance.generate_report()
-
-
-def determine_pool_size(job_vector):
-    """This function determines how large of a pool to make based on the
-    system resources currently available and how many jobs there are
-    to complete.
-    """
-
-    available_threads = cpu_count()
-    total_jobs = len(job_vector)
-    threads_to_pass = total_jobs
-    if total_jobs >= available_threads:
-        threads_to_pass = available_threads
-    if threads_to_pass > 90:
-        threads_to_pass = 90
-    print("There are {} threads available.\nThere are {} jobs:\nMaking a pool with {} threads".format(
-        available_threads, total_jobs, threads_to_pass), file = sys.stderr)
-    return threads_to_pass
-
-def available_threads():
-    """This is customized to always leave 6 threads on a server that has 96
-    total threads, but this process takes such little time that it doesn't
-    really matter.
-    """
-    threads = cpu_count()
-    if threads >= 90:
-        return 90
-    else:
-        return threads
-
-def main():
-    """1. Parse args
-    2. Figure out which directories are actually meraculous run directories
-    3. Make an instance for each directory and generate a report
-    """
-    home = os.getcwd()
-    options = parse_arguments()
-    print(options)
-    print()
-
-    #get a list of all directories in the cwd
-    dirs = [direc for direc in os.listdir(home) if os.path.isdir(direc)]
-    #instantiate all of the classes that we will be using in parallel processing
-    instances = []
-    for each in dirs:
-        thisInstance = meraculousRunAnalyzer(each, options.censor, options.quiet)
-        #only process the instances that are meraculous directories
-        if thisInstance.isMer:
-            instances.append(thisInstance)
-
-    if len(instances) == 0:
-        print("There are no meraculous folders in this directory. Exiting")
-    elif len(instances) > 0:
-        # run the program for each instance
-        #process each file sequentially using max number of threads
-        #determine the pool size to work with the unique sample names
-        pool_size = determine_pool_size(instances)
-        pool = ThreadPool(pool_size)
-        results = pool.map(run_merReport_dummy, instances)
-        pool.close()
-        pool.join()
-
-if __name__ == "__main__":
-    sys.exit(main())
+        self._make_HTML(logfile_filepath)
 
