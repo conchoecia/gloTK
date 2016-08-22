@@ -97,3 +97,9 @@ Thumbs.db
 *.py#
 *.txt#
 
+# git-specific and python emacs temporary files #
+#################################################
+.gitignore~
+MANIFEST.in~
+
+
