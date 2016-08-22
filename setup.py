@@ -7,13 +7,16 @@
 from setuptools import setup
 
 setup(name='gloTK',
-      version='0.1',
+      version='0.1.1',
       description='Genomes of Luminous Organisms Toolkit',
       long_description="""
           GloTK is a toolkit for enhancing productivity in the process
           of whole genome de novo assembly. Currently the package
           supports automated assembly HTML report generation and automated
-          assemly parameter optomization for the Meraculous assembler.""",
+          assemly parameter optomization for the Meraculous assembler. You can
+          visit the gitub page for more detailed information here: https://github.com/cypridina/gloTK
+      """,
+
       url='https://github.com/cypridina/gloTK',
       author='Darrin Schultz',
       author_email='dschultz@mbari.org',

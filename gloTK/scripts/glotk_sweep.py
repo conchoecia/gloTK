@@ -58,9 +58,10 @@ class FullPaths(argparse.Action):
 
 class CommandLine:
     """
-    authors: David Bernick and Darrin Schultz
+    authors: Darrin Schultz
     Handle the command line, usage and help requests.
     """
+
     def __init__(self) :
         """For stage 1, the necessary arguments for the MerParse class are:
           - inputFile
@@ -125,7 +126,7 @@ class CommandLine:
         self.parser.add_argument("-q", "--quiet",
                             action='store_true')
 
-
+    def parse(self):
         self.args = self.parser.parse_args()
 
         # check for input errors
@@ -223,6 +224,11 @@ def main():
 
     """
     parser = CommandLine()
+    #this block from here: http://stackoverflow.com/a/4042861/5843327
+    if len(sys.argv)==1:
+        parser.parser.print_help()
+        sys.exit(1)
+    parser.parse()
     myArgs = parser.args
 
     #Figure out how many processors to give to each assembly since we will be
