@@ -47,6 +47,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 
 #import gloTK stuff
 from gloTK import MerParse
+from gloTK import MerRunAnalyzer
 
 #This class is used in argparse to expand the ~. This avoids errors caused on
 # some systems.
