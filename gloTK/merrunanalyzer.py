@@ -56,7 +56,7 @@ class MerRunAnalyzer:
 
         #filename prefix, sanitized with censor method
         self.outname=self._str_ripper(os.path.basename(self.home))
-        self.merReportsDir = os.path.join(self.parent, "reports")
+        self.merReportsDir = os.path.join(os.path.abspath(output_parent_dir), "reports")
         self.reportDir = os.path.join(self.merReportsDir, self.outname)
 
         #make sure that the directory is a meraculous directory
