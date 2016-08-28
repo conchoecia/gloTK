@@ -7,7 +7,7 @@
 from setuptools import setup
 
 setup(name='gloTK',
-      version='0.1.1.1',
+      version='0.1.1.2',
       description='Genomes of Luminous Organisms Toolkit',
       long_description="""
           GloTK is a toolkit for enhancing productivity in the process
