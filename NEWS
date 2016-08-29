@@ -1,0 +1,8 @@
+0.1.1.2
+=====
+
+* Fixed an error where not specifying the start index or assembly
+  prefix caused the names to generate incorrectly or the program to
+  crash.
+* Added a test to verify that the assembler is working in sweep mode,
+  including test data.

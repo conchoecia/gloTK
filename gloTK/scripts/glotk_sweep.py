@@ -75,6 +75,8 @@ class CommandLine:
           - genus
           - species
         """
+        print(sys.argv)
+
         self.parser=argparse.ArgumentParser(description=__doc__)
         self.parser.add_argument("-i", "--inputConfig",
                             type=str,
@@ -96,6 +98,7 @@ class CommandLine:
                             help="""The interval between the sweep start and stop.""")
         self.parser.add_argument("-p", "--prefix",
                             type=str,
+                            default='as',
                             help="""The assembly prefix used to name config files
                             and the output directories.""")
         self.parser.add_argument("-I", "--index",
@@ -126,6 +129,12 @@ class CommandLine:
                             non-collaborators""")
         self.parser.add_argument("-q", "--quiet",
                             action='store_true')
+        self.parser.add_argument("-C", "--cleanup",
+                            type=int,
+                            default=1,
+                            choices=[0,1,2],
+                            help="""The cleanup level to pass along to the
+                            run_meraculous.sh program.""")
 
     def parse(self):
         self.args = self.parser.parse_args()
@@ -171,7 +180,7 @@ def mer_runner_dummy(instance):
 class MerRunner:
     """This class has one instance per Meraculous run and is accessed with the
     partial module"""
-    def __init__(self, runName, configPath, cleanup=0):
+    def __init__(self, runName, configPath, cleanup):
         """The cleanup parameter is what is passed to the run_meraculous script"""
         self.runName = runName
         self.configPath = configPath
@@ -181,7 +190,7 @@ class MerRunner:
         self.thisAssemblyDir = os.path.join(self.allAssembliesDir, self.runName)
         self.reportsDir = os.path.join(self.cwd, "reports")
 
-        self.callString = "bash run_meraculous.sh -c {0} -dir {1} -cleanup_level {2}".format(
+        self.callString = "run_meraculous.sh -c {0} -dir {1} -cleanup_level {2}".format(
             self.configPath, self.runName, self.cleanup)
 
     def meraculous_runner(self):
@@ -255,15 +264,13 @@ def main():
     if not os.path.exists(allAssembliesDir):
         os.makedirs(allAssembliesDir)
 
-
-
     #instantiate all of the classes that we will be using in parallel processing.
     # configPaths above returns a dict with the run name and abs path of config
     # as key:value pairs
     instances = []
     for runName in configPaths:
         configPath = configPaths.get(runName)
-        thisInstance = MerRunner(runName, configPath)
+        thisInstance = MerRunner(runName, configPath, myArgs.cleanup)
         instances.append(thisInstance)
 
     if len(instances) == 0:

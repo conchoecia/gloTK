@@ -25,6 +25,11 @@ import unittest
 import argparse
 from gloTK.scripts.glotk_sweep import CommandLine
 import os
+import shutil
+
+#call the assembly with the shell
+import subprocess
+
 
 class ErrorRaisingArgumentParser(argparse.ArgumentParser):
     def error(self, message):
@@ -55,18 +60,67 @@ class sweep_test_case(unittest.TestCase):
         print('msg:',cm.exception)
         self.assertIn('invalid choice', str(cm.exception))
 
+class assembly_test_case(unittest.TestCase):
+    """Tests a swept assembly"""
+    def setUp(self):
+        self.testRunDir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "phix174Test")
+        self.configDir = os.path.join(self.testRunDir, "configs")
+        self.assemDir = os.path.join(os.path.abspath(self.testRunDir) , "assemblies")
+        self.outputParentDir = os.path.join(os.path.abspath(os.path.dirname(__file__)))
+        self.read1 = os.path.join(self.testRunDir, "reads/SRR353630_2500_1.fastq.gz")
+        self.read2 = os.path.join(self.testRunDir, "reads/SRR353630_2500_2.fastq.gz")
+        self.readLink1 = os.path.join(self.testRunDir, "assemblies/SRR353630_2500_1.fastq.gz")
+        self.readLink2 = os.path.join(self.testRunDir, "assemblies/SRR353630_2500_2.fastq.gz")
 
-    def test_CommandLine_sweep_known(self):
-        """Try to perform sweep on all the options.
-        Namespace for sweep should contain the option.
+
+    def tearDown(self):
+        """This directory is called after every method is run even if the method
+        produces an error.
+
+        Here, it is used to remove any report files that are generated while
+        running these tests.
         """
-        args = ["-i", self.configPath, "--sweep", "mer_size",
-                "--sstart", "1",
-                "--sstop", "2",
-                "--sinterval", "1"]
-        parsedArgs = CommandLine(args).args
-        self.assertEqual("mer_size", parsedArgs.sweep)
 
+
+    def test_sweeps(self):
+        """Make sure that the program runs without error"""
+        os.chdir(self.testRunDir)
+        #make sure symlink for reads exists
+        if not os.path.exists(self.assemDir):
+            os.makedirs(self.assemDir)
+        os.symlink(self.read1, self.readLink1)
+        os.symlink(self.read2, self.readLink2)
+
+        callString = ["glotk-sweep",
+                      "-i", "phix174.config",
+                      "-s", "mer_size",
+                      "--sstart", "21",
+                      "--sstop", "25",
+                      "--sinterval", "2",
+                      "-n", "1"]
+        p = subprocess.run(callString, stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE,
+                           universal_newlines=True)
+        output = str(p.stdout)
+        err = str(p.stderr)
+        print(output)
+        print(err)
+
+        self.assertTrue(os.path.isfile(self.readLink1))
+        self.assertTrue(os.path.isfile(self.readLink2))
+        os.remove(self.readLink1)
+        os.remove(self.readLink2)
+
+        #get the names of the config files to look for those dir names
+        assemblies = os.listdir(self.configDir)
+        for each in assemblies:
+            assemblydir=os.path.join(self.assemDir, each)
+            configfile=os.path.join(self.configDir, each)
+            self.assertTrue(os.path.isdir(assemblydir))
+            self.assertTrue(os.path.isfile(configfile))
+        #remove the assembly dir after you're sure they're all there
+        shutil.rmtree(self.assemDir)
+        shutil.rmtree(self.configDir)
 
 if __name__ == '__main__':
     unittest.main()
