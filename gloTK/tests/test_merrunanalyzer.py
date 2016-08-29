@@ -116,6 +116,8 @@ class merParse_test_case(unittest.TestCase):
         self.mercountPNG = os.path.join(self.reportDocs, "mercount.png")
         self.assertTrue(os.path.exists(self.mercountPNG))
 
-        #remove everything after d
+        #everything is removed with the tearDown() method. No need to modify
+        # here.
+
 if __name__ == '__main__':
     unittest.main()
