@@ -65,21 +65,14 @@ class assembly_test_case(unittest.TestCase):
     def setUp(self):
         self.testRunDir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "phix174Test")
         self.configDir = os.path.join(self.testRunDir, "configs")
-        self.assemDir = os.path.join(os.path.abspath(self.testRunDir) , "assemblies")
+        self.assemDir = os.path.join(self.testRunDir , "assemblies")
+        self.reportDir = os.path.join(self.testRunDir, "reports")
         self.outputParentDir = os.path.join(os.path.abspath(os.path.dirname(__file__)))
         self.read1 = os.path.join(self.testRunDir, "reads/SRR353630_2500_1.fastq.gz")
         self.read2 = os.path.join(self.testRunDir, "reads/SRR353630_2500_2.fastq.gz")
         self.readLink1 = os.path.join(self.testRunDir, "assemblies/SRR353630_2500_1.fastq.gz")
         self.readLink2 = os.path.join(self.testRunDir, "assemblies/SRR353630_2500_2.fastq.gz")
 
-
-    def tearDown(self):
-        """This directory is called after every method is run even if the method
-        produces an error.
-
-        Here, it is used to remove any report files that are generated while
-        running these tests.
-        """
 
 
     def test_sweeps(self):
@@ -116,11 +109,19 @@ class assembly_test_case(unittest.TestCase):
         for each in assemblies:
             assemblydir=os.path.join(self.assemDir, each)
             configfile=os.path.join(self.configDir, each)
+            #make sure that there is an assembly with that name
             self.assertTrue(os.path.isdir(assemblydir))
+            #make sure there is a config file with that name
             self.assertTrue(os.path.isfile(configfile))
+            #make sure there is a report dir with that name
+            self.assertTrue(os.path.isdir(os.path.join(self.reportDir, each)))
+            #make sure there is a report file with that name
+            reportFile = "{}_report.html".format(each)
+            self.assertTrue(os.path.isfile(os.path.join(self.reportDir, reportFile)))
         #remove the assembly dir after you're sure they're all there
         shutil.rmtree(self.assemDir)
         shutil.rmtree(self.configDir)
+        shutil.rmtree(self.reportDir)
 
 if __name__ == '__main__':
     unittest.main()
