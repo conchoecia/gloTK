@@ -144,8 +144,15 @@ class MerParse:
             self.sList = sweep_list
 
         # -------------------------Name Parameters------------------------------
-        self.as_a = asPrefix
-        self.as_i = int(asSI)
+          #used if-else to make this more robust
+        if asPrefix is None:
+            self.as_a = "as"
+        else:
+            self.as_a = asPrefix
+        if asSI is None:
+            self.as_i = 0
+        else:
+            self.as_i = int(asSI)
         #http://stackoverflow.com/questions/311627/
         self.as_d = tfmt("%Y%m%d")
         self.as_z = "ME"

@@ -41,10 +41,6 @@ coverage.xml
 # Rope
 .ropeproject
 
-# Django stuff:
-*.log
-*.pot
-
 # Sphinx documentation
 docs/_build/
 
@@ -73,7 +69,6 @@ Compiled source #
 
 # Logs and databases #
 ######################
-*.log
 *.sql
 *.sqlite
 
