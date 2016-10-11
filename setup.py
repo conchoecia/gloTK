@@ -43,7 +43,8 @@ setup(name='gloTK',
       test_suite='nose.collector',
       tests_require=['nose'],
       entry_points = {
-            'console_scripts': ['glotk-sweep=gloTK.scripts.glotk_sweep:main'],
+            'console_scripts': ['glotk-sweep=gloTK.scripts.glotk_sweep:main',
+                                'glotk-mitoshaper=gloTK.scripts.glotk_mitoshaper:main'],
         },
       zip_safe=False,
       include_package_data=True)
