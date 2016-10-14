@@ -23,7 +23,7 @@ This class tests the classes and methods for utils.py
 
 import unittest
 from gloTK.wrappers import Seqprep
-from gloTK.utils import fastq_info
+from gloTK.utils import fastq_info, fastx_basename
 
 import os
 import subprocess
@@ -34,6 +34,11 @@ class utils_test_case(unittest.TestCase):
     def setUp(self):
         self.readPath = os.path.join(os.path.abspath(os.path.dirname(__file__)),"phix174Test/reads/")
         self.forwardPath = os.path.join(self.readPath, "SRR353630_2500_1.fastq.gz")
+
+    def test_fastqParse(self):
+        print(self.forwardPath)
+        result = fastx_basename(self.forwardPath)
+        self.assertEqual("SRR353630_2500_1", result)
 
     def test_unmerged(self):
         """ verify that fastq_info is working correctly

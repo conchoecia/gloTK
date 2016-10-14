@@ -34,32 +34,34 @@ class seqprep_test_case(unittest.TestCase):
         self.readPath = os.path.join(os.path.abspath(os.path.dirname(__file__)),"phix174Test/reads/")
         self.forwardPath = os.path.join(self.readPath, "SRR353630_2500_1.fastq.gz")
         self.reversePath = os.path.join(self.readPath, "SRR353630_2500_2.fastq.gz")
-        self.forwardOut  = os.path.join(self.readPath, "out_forward.fastq.gz")
-        self.reverseOut  = os.path.join(self.readPath, "out_reverse.fastq.gz")
-        self.mergedOut   = os.path.join(self.readPath, "out_merged.fastq.gz")
-        self.prettyOut   = os.path.join(self.readPath, "pretty.txt.gz")
+        self.forwardOutFile  = ("out_forward.fastq.gz")
+        self.reverseOutFile  = ("out_reverse.fastq.gz")
+        self.mergedOutFile   = ("out_merged.fastq.gz")
+        self.prettyOutFile   = ("pretty.txt.gz")
         self.nameVector = [self.forwardPath,
                            self.reversePath,
-                           self.forwardOut,
-                           self.reverseOut,
-                           self.mergedOut,
-                           self.prettyOut]
+                           os.path.join(self.readPath, self.forwardOutFile),
+                           os.path.join(self.readPath, self.reverseOutFile),
+                           os.path.join(self.readPath, self.mergedOutFile),
+                           os.path.join(self.readPath, self.prettyOutFile),
+                           os.path.join(self.readPath, "seqprep2.log")]
 
     def test_unmerged(self):
-        """ This method tests that Seqprep is correctly processing both merged
-        and unmerged data.
+        """This method tests that Seqprep is correctly processing both merged and unmerged data.
         """
-        prep = Seqprep(forwardPath = self.forwardPath,
-                       reversePath = self.reversePath,
-                       forwardOut = self.forwardOut,
-                       reverseOut = self.reverseOut,
-                       mergedOut = self.mergedOut,
-                       prettyOut = self.prettyOut)
-        prep.run()
+
+        prep = Seqprep(forwardPath    = self.forwardPath,
+                       reversePath    = self.reversePath,
+                       forwardOutFile = self.forwardOutFile,
+                       reverseOutFile = self.reverseOutFile,
+                       mergedOutFile  = self.mergedOutFile,
+                       prettyOutFile  = self.prettyOutFile,
+                       outDir         = self.readPath)
         for path in self.nameVector:
             self.assertTrue(os.path.exists(path))
             if "SRR" not in path:
                 os.remove(path)
+
 
 
 

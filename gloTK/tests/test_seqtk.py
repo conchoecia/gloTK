@@ -22,7 +22,7 @@ This class tests the classes and methods for Seqtk in commandline_tools.py
 """
 
 import unittest
-from gloTK import Seqtk
+from gloTK.wrappers import Seqtk
 
 import os
 import subprocess
@@ -39,10 +39,14 @@ class seqtk_test_case(unittest.TestCase):
         test dataset. It creates a zipped file and then verifies that
         the unzipped file has the correct number of lines
         """
-        self.inpath = os.path.join(self.readPath, "SRR353630_2500_1.fastq.gz")
-        self.outpath = os.path.join(self.readPath, "sampled.txt.gz")
-        sampled = Seqtk(100, self.inpath, 2, self.outpath)
-        sampled.sample()
+        self.inputPath = os.path.join(self.readPath, "SRR353630_2500_1.fastq.gz")
+        self.outpath = os.path.join(self.readPath, "SRR353630_2500_1_2reads.fastq.gz")
+
+        sampled = Seqtk(seed = 100,
+                        inputPath = self.inputPath,
+                        readCount = 2,
+                        outDir = self.readPath)
+
         linecount = 0
         with gzip.open(self.outpath, 'rb') as f:
              for i, l in enumerate(f):
@@ -50,6 +54,7 @@ class seqtk_test_case(unittest.TestCase):
              linecount = i + 1
         self.assertEqual(linecount, 8)
         os.remove(self.outpath)
+        os.remove(os.path.join(self.readPath, "seqtk.log"))
 
 
 if __name__ == '__main__':
