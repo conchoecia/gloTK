@@ -151,8 +151,8 @@ class merParse_test_case(unittest.TestCase):
         #     - k = 21
         # should be "as000_YYYYMMDD_ME_k21
         as_d = tfmt("%Y%m%d")
-        myParseShouldEqual = "as000_{}_ME_k21.config".format(as_d)
-        equals = self.myParse.name_gen(0, 21)
+        myParseShouldEqual = "as000_{}_ME_k21_d2".format(as_d)
+        equals = self.myParse.name_gen(0, 21, 2)
         self.assertEqual(myParseShouldEqual, equals)
 
     def test_name_gen_noSpecies(self):
@@ -170,12 +170,12 @@ class merParse_test_case(unittest.TestCase):
         # should be "as015_YYYYMMDD_ME_k33
         as_d = tfmt("%Y%m%d")
         k = 33
-        myParseShouldEqual = "ab015_{}_ME_Malacosteus_k{}.config".format(as_d, k)
+        myParseShouldEqual = "ab015_{}_ME_Malacosteus_k{}_d0".format(as_d, k)
         self.myParse2 = MerParse(self.configPath, self.sweep,
                                 self.sList, self.lnProcs,
                                 asPrefix = "ab",
                                 genus = self.genus, asSI=5)
-        self.assertEqual(myParseShouldEqual, self.myParse2.name_gen(15, k))
+        self.assertEqual(myParseShouldEqual, self.myParse2.name_gen(15, k, 0))
 
     def test_name_gen_noGenus(self):
         """This tests that the myParse.name_gen() method works when the
@@ -192,12 +192,12 @@ class merParse_test_case(unittest.TestCase):
         # should be "as856_YYYYMMDD_ME_niger_k57
         as_d = tfmt("%Y%m%d")
         k = 57
-        myParseShouldEqual = "xx856_{}_ME_niger_k{}.config".format(as_d, k)
+        myParseShouldEqual = "xx856_{}_ME_niger_k{}_d0".format(as_d, k)
         self.myParse2 = MerParse(self.configPath, self.sweep,
                                 self.sList, self.lnProcs,
                                 asPrefix = "xx",
                                 species = self.species, asSI=5)
-        self.assertEqual(myParseShouldEqual, self.myParse2.name_gen(856, k))
+        self.assertEqual(myParseShouldEqual, self.myParse2.name_gen(856, k, 0))
 
     def test_genus_species_illegal(self):
         """This tests that the myParse.__init__() method correctly identifies

@@ -73,6 +73,7 @@ class assembly_test_case(unittest.TestCase):
         self.readLink1 = os.path.join(self.testRunDir, "assemblies/SRR353630_2500_1.fastq.gz")
         self.readLink2 = os.path.join(self.testRunDir, "assemblies/SRR353630_2500_2.fastq.gz")
 
+    #@unittest.skip("trying next")
     def test_sweeps(self):
         """Make sure that the program runs without error"""
         os.chdir(self.testRunDir)
@@ -125,6 +126,64 @@ class assembly_test_case(unittest.TestCase):
         shutil.rmtree(self.assemDir)
         shutil.rmtree(self.configDir)
         shutil.rmtree(self.reportDir)
+
+    #@unittest.skip("dunno")
+    def test_triplet(self):
+        """Make sure that the program runs in triplet mode without error.
+        Specifically, it verifies that assemblies for all three diploid modes
+        were generated"""
+
+        os.chdir(self.testRunDir)
+        #make sure symlink for reads exists
+        if not os.path.exists(self.assemDir):
+            os.makedirs(self.assemDir)
+
+        #force the program to make the sym links
+        for pair in [(self.read1, self.readLink1),
+                     (self.read2, self.readLink2)]:
+            try:
+                os.symlink(pair[0], pair[1])
+            except FileExistsError:
+                    os.remove(pair[1])
+                    os.symlink(pair[0], pair[1])
+
+        callString = ["glotk-sweep",
+                      "-i", "phix174.config",
+                      "-s", "mer_size",
+                      "--slist", "21",
+                      "-n", "1", "--triplet"]
+        p = subprocess.run(callString, stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE,
+                           universal_newlines=True)
+        output = str(p.stdout)
+        err = str(p.stderr)
+        print(output)
+        print(err)
+
+        self.assertTrue(os.path.isfile(self.readLink1))
+        self.assertTrue(os.path.isfile(self.readLink2))
+        os.remove(self.readLink1)
+        os.remove(self.readLink2)
+
+        #get the names of the config files to look for those dir names
+        assemblies = os.listdir(self.configDir)
+        for each in assemblies:
+            assemblydir=os.path.join(self.assemDir, each.strip(".config"))
+            configfile=os.path.join(self.configDir, each)
+            #make sure that there is an assembly with that name
+            self.assertTrue(os.path.isdir(assemblydir))
+            #make sure there is a config file with that name
+            self.assertTrue(os.path.isfile(configfile))
+            #make sure there is a report dir with that name
+            self.assertTrue(os.path.isdir(os.path.join(self.reportDir, each.strip(".config"))))
+            #make sure there is a report file with that name
+            reportFile = "{}_report.html".format(each.strip(".config"))
+            self.assertTrue(os.path.isfile(os.path.join(self.reportDir, reportFile)))
+        #remove the assembly dir after you're sure they're all there
+        shutil.rmtree(self.assemDir)
+        shutil.rmtree(self.configDir)
+        shutil.rmtree(self.reportDir)
+
 
 if __name__ == '__main__':
     unittest.main()

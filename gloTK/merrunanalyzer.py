@@ -227,14 +227,15 @@ class MerRunAnalyzer:
             print("", file=logfile)
             bblFromPath = os.path.join(self.home,
                                        "meraculous_bubble/haplotigs.depth.hist.png")
-            bblToPath = os.path.join(self.reportDir, "haplotigs.depth.hist.png")
-            bblHTML = os.path.join(
-                os.path.basename(os.path.split(bblToPath)[0]),
-                os.path.basename(bblToPath))
-            shutil.copyfile(bblFromPath, bblToPath)
-            print("![bbl]({0})".format(bblHTML),
-                   file=logfile)
-            print("", file=logfile)
+            if os.path.exists(bblFromPath):
+                bblToPath = os.path.join(self.reportDir, "haplotigs.depth.hist.png")
+                bblHTML = os.path.join(
+                    os.path.basename(os.path.split(bblToPath)[0]),
+                    os.path.basename(bblToPath))
+                shutil.copyfile(bblFromPath, bblToPath)
+                print("![bbl]({0})".format(bblHTML),
+                       file=logfile)
+                print("", file=logfile)
             bbl_detect=os.path.join(self.home, "meraculous_bubble/haplotigs.dmin.err")
             if os.path.exists(bbl_detect):
                 #in a later version, just look at the meraculous log file

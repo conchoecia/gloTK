@@ -126,6 +126,10 @@ class CommandLine:
                             non-collaborators""")
         self.parser.add_argument("-q", "--quiet",
                             action='store_true')
+        self.parser.add_argument("-t", "--triplet",
+                            action='store_true',
+                            help="""This performs diploid modes 0, 1, 2 for
+                            every kmer size input""")
         self.parser.add_argument("-C", "--cleanup",
                             type=int,
                             default=1,
@@ -209,7 +213,7 @@ def main():
     #Figure out how many processors to give to each assembly since we will be
     # running some things in parallel. The MerParse class will handle overriding
     # whatever is found in the config file in the read_config() method.
-    procsPerAssembly = int(myArgs.maxProcs / myArgs.simultaneous)
+    procsPerAssembly = min(50, int(myArgs.maxProcs / myArgs.simultaneous))
     setattr(myArgs, "maxProcs", procsPerAssembly)
 
     # 1. Reads in a meraculous config file and outputs all of the associated config
@@ -222,7 +226,8 @@ def main():
                          asPrefix = myArgs.prefix,
                          asSI = myArgs.index,
                          genus = myArgs.genus,
-                         species = myArgs.species)
+                         species = myArgs.species,
+                         triplet = myArgs.triplet)
     configPaths = merparser.sweeper_output()
 
     #make the assemblies dir ONCE to avoid a race condition for os.makedirs()
@@ -244,6 +249,7 @@ def main():
     if len(instances) == 0:
         print("There are no meraculous folders in this directory. Exiting")
     elif len(instances) > 0:
+        print("Using {} processors.".format(procsPerAssembly * myArgs.simultaneous))
         # run the program for each instance
         # pool size is the number of simultaneous runs for the server
         pool = ThreadPool(myArgs.simultaneous)

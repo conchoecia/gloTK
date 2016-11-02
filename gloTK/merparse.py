@@ -57,7 +57,10 @@ class MerParse:
         the config files.
     """
     def __init__(self, inputFile, sweep, sList, lnProcs,
-                 asPrefix = "as", asSI = 0, genus = None, species = None):
+                 asPrefix = "as", asSI = 0, genus = None, species = None,
+                 triplet=False):
+        # ----------------- Run triplet assembly -------------------------------
+        self.triplet = triplet
         # --------------- Config File Parameters -------------------------------
         self.inputFile = inputFile
         self.params = {"lib_seq": [],
@@ -162,18 +165,19 @@ class MerParse:
             raise IOError("""<genus> or <species/sample> contains the
                 illegal characters: {}""".format(illegal))
 
-    def name_gen(self, as_number, k):
+    def name_gen(self, as_number, k, diploid_mode):
         """See the sweeper_output() method doctstring for format details."""
         #how to add prefixes to numbers
         #http://stackoverflow.com/a/135157
-        #         ai_d_z_g_s_k.config
+        #         ai_d_z_g_s_k_p.config
 
         parts =  {"1ai": "{0}{1:03d}_".format(self.as_a, as_number),
                   "2d" : "{0}_".format(self.as_d),
                   "3z" : "ME_",
                   "4g" : "{}_".format(self.as_g) if self.as_g else "",
                   "5s" : "{}_".format(self.as_s) if self.as_s else "",
-                  "6k" : "k{}".format(k)}
+                  "6k" : "k{}_".format(k),
+                  "7p" : "d{}".format(diploid_mode)}
         return "".join([parts.get(x) for x in sorted(parts)])
 
     def sweeper_output(self):
@@ -188,8 +192,9 @@ class MerParse:
         g = first four letters of genus. Truncates if species name is too long.
         s = first four letters of species. Truncates if genus name is too long.
         k = kmer size
+        p = ploid-type (diploid_mode)
 
-        ai_d_z_g_s_k
+        ai_d_z_g_s_k_p
 
         For example, if I enter the following parameters for a k=21 run on
         20160811:
@@ -198,7 +203,7 @@ class MerParse:
 
         The assembly directory will be saved in the current working
         directory as:
-          - configs/as000_20160811_ME_mala_nige_k21
+          - configs/as000_20160811_ME_mala_nige_k21_p0
 
         Steps for this method:
         1. Check if configs is a directory that exists, if not, make it.
@@ -213,33 +218,62 @@ class MerParse:
             os.makedirs(config_dir)
 
         # 2. Assign assembly numbers to sweep param
-        asNum_sweep_dict = {asNum:self.sList[asNum - self.as_i]
-                            for asNum in range(self.as_i, self.as_i + len(self.sList))}
-        if self.sweep == "mer_size":
-            asName_asSweep_dict = {
-                self.name_gen(asNum, asNum_sweep_dict[asNum]): asNum_sweep_dict[asNum]
-                                      for asNum in asNum_sweep_dict}
-        else:
-            asName_asSweep_dict = {
-                self.name_gen(asNum, self.params.get("mer_size")): asNum_sweep_dict[asNum]
-                                  for asNum in asNum_sweep_dict}
+        print(self.sList)
+        if self.triplet:
+            self.sList = [k for sublist in [[x] * 3 for x in self.sList] for k in sublist]
+        print(self.sList)
+
+        self.subParams = []
+        diploid_counter = 0
+        asNumCounter = self.as_i
+        for kmer in self.sList:
+            subPDict = {}
+            #set mer_size
+            if self.sweep == "mer_size":
+                subPDict["mer_size"] = kmer
+            else:
+                subPDict["mer_size"] = self.params.get("mer_size")
+            #set diploid_mode
+            if self.triplet:
+                subPDict["diploid_mode"] = diploid_counter
+            else:
+                subPDict["diploid_mode"] = self.params.get("diploid_mode")
+            #set assembly number
+            subPDict["assem_num"] = asNumCounter
+            #set assembly name
+            subPDict["assem_name"] = self.name_gen(subPDict.get("assem_num"),
+                                                   subPDict.get("mer_size"),
+                                                   subPDict.get("diploid_mode"))
+            self.subParams.append(subPDict)
+            #keep track of the diploid modes to use in case of self.triplet
+            if diploid_counter == 3:
+                diploid_counter = 0
+            else:
+                diploid_counter += 1
+            #increment the assembly number counter
+            asNumCounter += 1
 
         #This block actually saves the config files
-        for name in asName_asSweep_dict:
-            sweep = asName_asSweep_dict[name]
-            with open(os.path.join(config_dir, "{0}.config".format(name)), "w") as f:
-                self.params[self.sweep] = sweep
+        for assemParam in self.subParams:
+            with open(os.path.join(config_dir, "{0}.config".format(
+                    assemParam.get("assem_name"))),
+                    "w") as f:
                 for key in self.params:
                     if key == "lib_seq":
                         for each in self.params["lib_seq"]:
                             print("lib_seq {0}".format(each), file = f)
                     else:
-                        print("{0} {1}".format(key,self.params[key]), file=f)
+                        if key in assemParam:
+                            print("{0} {1}".format(key, assemParam.get(key)),
+                                  file=f)
+                        else:
+                            print("{0} {1}".format(key, self.params[key]),
+                                  file=f)
 
         # 3 return dict of {"<run string>": "<config abs path>"}.
         # THIS IS THE FINAL FUNCTIONAL OUTPUT OF THIS CLASS.
         return {name:os.path.join(config_dir, "{0}.config".format(name))
-                for name in asName_asSweep_dict}
+                for name in [subDict["assem_name"] for subDict in self.subParams]}
 
     def assign(self, dict_name, key, value):
         """This assigns an input string to either a float or int and saves it in
