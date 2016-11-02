@@ -1,4 +1,11 @@
 ====================
+ v0.1.14 - 20161102
+====================
+
+* Gave a --triplet flag to glotk-sweep to cause the assembler to run diploid modes
+  0, 1, and 2 on the same kmer size.
+
+====================
  v0.1.13 - 20161102
 ====================
 
