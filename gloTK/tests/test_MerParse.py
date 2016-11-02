@@ -33,17 +33,20 @@ class merParse_test_case(unittest.TestCase):
     def setUp(self):
         self.configPath = os.path.join(os.path.abspath(os.path.dirname(__file__)),"ksweep_test.config")
         self.sweep = "mer_size"
-        self.sStart = 21
-        self.sStop = 75
-        self.sInterval = 2
+        self.sList = ['21', '23', '25', '27', '29',
+                      '31', '33', '35', '37', '39',
+                      '41', '43', '45', '47', '49',
+                      '51', '53', '55', '57', '59',
+                      '61', '63', '65', '67', '69',
+                      '71', '73', '75']
         self.asPrefix = "ab"
         self.asSI = 5
         self.genus = "Malacosteus"
         self.species = "niger"
         self.lnProcs = 27
         self.myParse = MerParse(self.configPath, self.sweep,
-                                self.sStart, self.sStop,
-                                self.sInterval, self.lnProcs)
+                                self.sList,
+                                self.lnProcs)
 
         self.correctly_parsed_ls1 = {"wildcard": "/mydir/fwd_data*.1.fastq.gz,/mydir/rev_data*.2.fastq.gz",
                             "name": "SP2013",
@@ -98,18 +101,6 @@ class merParse_test_case(unittest.TestCase):
         self.assertEqual(self.myParse.params, parsed_params)
         self.assertEqual(self.myParse.diploid_mode, parsed_diploid_mode)
 
-    def test_sweepStart_less(self):
-        """For this program, the sweep start must be less than sweep stop,
-        so it throws an exception when that rule is violated
-
-        Tests this line of code in merParse class:
-          - if sStart >= sStop:
-        """
-        with self.assertRaises(AttributeError):
-            self.myParse = MerParse(self.configPath, self.sweep,
-                                self.sStop, self.sStart, self.sInterval,
-                                self.lnProcs)
-
     def test_sweep_supported(self):
         """Checks to make sure that an error is raised if something that isn't
         one of the supported sweep types is input as self.sweep in merParse
@@ -121,12 +112,12 @@ class merParse_test_case(unittest.TestCase):
         #shouldn't work with an unknown string
         with self.assertRaises(AttributeError):
             self.myParse = MerParse(self.configPath, "noodles",
-                                self.sStop, self.sStart, self.sInterval,
+                                self.sList,
                                 self.lnProcs)
         #and it shouldn't work with a number
         with self.assertRaises(AttributeError):
             self.myParse = MerParse(self.configPath, 5,
-                                self.sStop, self.sStart, self.sInterval,
+                                self.sList,
                                 self.lnProcs)
 
     def test_sweep_mer_size_odd(self):
@@ -139,7 +130,8 @@ class merParse_test_case(unittest.TestCase):
           - if evens:
         """
         with self.assertRaises(AttributeError):
-            self.myParse = MerParse(self.configPath, 5, 21, 27, 3, self.lnProcs)
+            self.myParse = MerParse(self.configPath, "mer_parse", ['21', '22'],
+                                    self.lnProcs)
 
     ############################################################################
     #                          MerParse.name_gen() Tests
@@ -159,7 +151,7 @@ class merParse_test_case(unittest.TestCase):
         #     - k = 21
         # should be "as000_YYYYMMDD_ME_k21
         as_d = tfmt("%Y%m%d")
-        myParseShouldEqual = "as000_{}_ME_k21".format(as_d)
+        myParseShouldEqual = "as000_{}_ME_k21.config".format(as_d)
         equals = self.myParse.name_gen(0, 21)
         self.assertEqual(myParseShouldEqual, equals)
 
@@ -178,10 +170,9 @@ class merParse_test_case(unittest.TestCase):
         # should be "as015_YYYYMMDD_ME_k33
         as_d = tfmt("%Y%m%d")
         k = 33
-        myParseShouldEqual = "ab015_{}_ME_Malacosteus_k{}".format(as_d, k)
+        myParseShouldEqual = "ab015_{}_ME_Malacosteus_k{}.config".format(as_d, k)
         self.myParse2 = MerParse(self.configPath, self.sweep,
-                                self.sStart, self.sStop,
-                                self.sInterval, self.lnProcs,
+                                self.sList, self.lnProcs,
                                 asPrefix = "ab",
                                 genus = self.genus, asSI=5)
         self.assertEqual(myParseShouldEqual, self.myParse2.name_gen(15, k))
@@ -201,10 +192,9 @@ class merParse_test_case(unittest.TestCase):
         # should be "as856_YYYYMMDD_ME_niger_k57
         as_d = tfmt("%Y%m%d")
         k = 57
-        myParseShouldEqual = "xx856_{}_ME_niger_k{}".format(as_d, k)
+        myParseShouldEqual = "xx856_{}_ME_niger_k{}.config".format(as_d, k)
         self.myParse2 = MerParse(self.configPath, self.sweep,
-                                self.sStart, self.sStop,
-                                self.sInterval, self.lnProcs,
+                                self.sList, self.lnProcs,
                                 asPrefix = "xx",
                                 species = self.species, asSI=5)
         self.assertEqual(myParseShouldEqual, self.myParse2.name_gen(856, k))
@@ -234,8 +224,7 @@ class merParse_test_case(unittest.TestCase):
         #http://stackoverflow.com/questions/12516881
         with self.assertRaises(OSError) as raises_cm:
             self.myParse3 = MerParse(self.configPath, self.sweep,
-                                self.sStart, self.sStop,
-                                self.sInterval, self.lnProcs,
+                                self.sList, self.lnProcs,
                                 asPrefix = "xx",
                                 species = species,
                                 genus = genus, asSI=5)
@@ -255,8 +244,7 @@ class merParse_test_case(unittest.TestCase):
     @unittest.skip("only run this if you want to see output files in your terminal")
     def test_sweeper_output(self):
         myParseSweeper = MerParse(self.configPath, self.sweep,
-                                self.sStart, self.sStop,
-                                self.sInterval, asPrefix = "xx",
+                                self.sList, asPrefix = "xx",
                                 species = self.species,
                                 genus = self.genus, asSI=5)
         myParseSweeper.sweeper_output()

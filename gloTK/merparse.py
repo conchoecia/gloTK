@@ -56,7 +56,7 @@ class MerParse:
     Now the myPaths object contains a dict of run names and absolute paths for
         the config files.
     """
-    def __init__(self, inputFile, sweep, sStart, sStop, sInterval, lnProcs,
+    def __init__(self, inputFile, sweep, sList, lnProcs,
                  asPrefix = "as", asSI = 0, genus = None, species = None):
         # --------------- Config File Parameters -------------------------------
         self.inputFile = inputFile
@@ -98,9 +98,6 @@ class MerParse:
         # -------------------------Sweep Parameters-----------------------------
         self.sweep = sweep
         self.sweep_support_int = ["mer_size", "bubble_depth_threshold"]
-        self.sStart = sStart
-        self.sStop = sStop
-        self.sInterval = sInterval
 
             #make sure that they're supported sweep types
         if self.sweep not in self.sweep_support_int:
@@ -109,39 +106,26 @@ class MerParse:
             the software at https://github.com/cypridina/gloTK. {1}""".format(
                 self.sweep, self.sweep_support))
 
-            #if they're supposed to be ints, convert them to ints first
-        if self.sweep in self.sweep_support_int:
-            for each in ["sStart", "sStop", "sInterval"]:
-                setattr(self, each, int(getattr(self, each)))
-                attr=getattr(self, each)
-                if attr % 1 != 0:
-                    raise AttributeError("""One or more of your sweep parameters
-                    contains float numbers {0}, but you chose to sweep on a parameter
-                    that requires ints {1}. Please try again.""".format(each, self.sweep))
 
-        if self.sStart >= self.sStop:
-            raise AttributeError("""The input sweep start value is greater than
-            or equal to the sweep stop value. {0}>={1}. Please make sweep start
-            less than sweep stop.""".format(self.sStart, self.sStop))
-        if ((self.sStop - self.sStart) % self.sInterval) != 0:
-            raise AttributeError("""Your sweep interval does not end on your
-            sweep stop, and is off by {0}. Try increasing or decreasing your
-            sweep stop by that much.""".format(self.sInterval - ((self.sStop - self.sStart) % self.sInterval)))
-                #------------------------------Sweep List-------------------------------
+        #------------------------------Sweep List-------------------------------
         # Generate list for the sweep parameters. Current implementation only
         #   sweeps through ints, so no special processing is needed.
         # If sweep is "mer_size", then make sure that none of the values are
         #   even.
         if self.sweep in self.sweep_support_int:
-            sweep_list = [x for x in range(self.sStart, self.sStop + self.sInterval, self.sInterval)]
             if self.sweep == "mer_size":
-                evens = [x for x in sweep_list if x % 2 == 0]
-                if evens:
-                    raise AttributeError("""Your sweep interval for mer_size
-                    resulted in the following even numbers: {0}. Please adjust
-                    your sweep start, stop, and interval to only contain
-                    positive odd integers""".format(evens))
-            self.sList = sweep_list
+                evens = [ x for x in sList if int(x) % 2 == 0]
+                floats = [ x for x in sList if float(x) % int(x) != 0.0 ]
+                errors = evens + floats
+                if errors:
+                    raise AttributeError("""Your sweep selection for kmer size
+                    contained the even number or float: {0}. Please remove all even
+                    numbers or floats from your input for mer_size.""".format(errors))
+
+
+        #if they're supposed to be ints, convert them to ints first
+        if self.sweep in self.sweep_support_int:
+            self.sList = [int(x) for x in sList]
 
         # -------------------------Name Parameters------------------------------
           #used if-else to make this more robust
@@ -182,7 +166,7 @@ class MerParse:
         """See the sweeper_output() method doctstring for format details."""
         #how to add prefixes to numbers
         #http://stackoverflow.com/a/135157
-        #         ai_d_z_g_s_k
+        #         ai_d_z_g_s_k.config
 
         parts =  {"1ai": "{0}{1:03d}_".format(self.as_a, as_number),
                   "2d" : "{0}_".format(self.as_d),
@@ -240,9 +224,10 @@ class MerParse:
                 self.name_gen(asNum, self.params.get("mer_size")): asNum_sweep_dict[asNum]
                                   for asNum in asNum_sweep_dict}
 
+        #This block actually saves the config files
         for name in asName_asSweep_dict:
             sweep = asName_asSweep_dict[name]
-            with open(os.path.join(config_dir, name), "w") as f:
+            with open(os.path.join(config_dir, "{0}.config".format(name)), "w") as f:
                 self.params[self.sweep] = sweep
                 for key in self.params:
                     if key == "lib_seq":
@@ -251,8 +236,9 @@ class MerParse:
                     else:
                         print("{0} {1}".format(key,self.params[key]), file=f)
 
-        # 3 return dict of {"<run string>": "<config abs path>"}
-        return {name:os.path.join(config_dir, name)
+        # 3 return dict of {"<run string>": "<config abs path>"}.
+        # THIS IS THE FINAL FUNCTIONAL OUTPUT OF THIS CLASS.
+        return {name:os.path.join(config_dir, "{0}.config".format(name))
                 for name in asName_asSweep_dict}
 
     def assign(self, dict_name, key, value):

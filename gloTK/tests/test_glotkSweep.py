@@ -54,7 +54,7 @@ class sweep_test_case(unittest.TestCase):
         This is more so for demonstration purposes, since the CommandLine class
         inherits the normal argparse module without the inherited error method.
         """
-        args = ["--sweep", "NADA"]
+        args = ["--sweep", "TESTING_NADA"]
         with self.assertRaises(ValueError) as cm:
             self.parser.parse_args(args)
         print('msg:',cm.exception)
@@ -73,23 +73,26 @@ class assembly_test_case(unittest.TestCase):
         self.readLink1 = os.path.join(self.testRunDir, "assemblies/SRR353630_2500_1.fastq.gz")
         self.readLink2 = os.path.join(self.testRunDir, "assemblies/SRR353630_2500_2.fastq.gz")
 
-
-
     def test_sweeps(self):
         """Make sure that the program runs without error"""
         os.chdir(self.testRunDir)
         #make sure symlink for reads exists
         if not os.path.exists(self.assemDir):
             os.makedirs(self.assemDir)
-        os.symlink(self.read1, self.readLink1)
-        os.symlink(self.read2, self.readLink2)
+
+        #force the program to make the sym links
+        for pair in [(self.read1, self.readLink1),
+                     (self.read2, self.readLink2)]:
+            try:
+                os.symlink(pair[0], pair[1])
+            except FileExistsError:
+                    os.remove(pair[1])
+                    os.symlink(pair[0], pair[1])
 
         callString = ["glotk-sweep",
                       "-i", "phix174.config",
                       "-s", "mer_size",
-                      "--sstart", "21",
-                      "--sstop", "25",
-                      "--sinterval", "2",
+                      "--slist", "21", "23", "25",
                       "-n", "1"]
         p = subprocess.run(callString, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE,
@@ -107,16 +110,16 @@ class assembly_test_case(unittest.TestCase):
         #get the names of the config files to look for those dir names
         assemblies = os.listdir(self.configDir)
         for each in assemblies:
-            assemblydir=os.path.join(self.assemDir, each)
+            assemblydir=os.path.join(self.assemDir, each.strip(".config"))
             configfile=os.path.join(self.configDir, each)
             #make sure that there is an assembly with that name
             self.assertTrue(os.path.isdir(assemblydir))
             #make sure there is a config file with that name
             self.assertTrue(os.path.isfile(configfile))
             #make sure there is a report dir with that name
-            self.assertTrue(os.path.isdir(os.path.join(self.reportDir, each)))
+            self.assertTrue(os.path.isdir(os.path.join(self.reportDir, each.strip(".config"))))
             #make sure there is a report file with that name
-            reportFile = "{}_report.html".format(each)
+            reportFile = "{}_report.html".format(each.strip(".config"))
             self.assertTrue(os.path.isfile(os.path.join(self.reportDir, reportFile)))
         #remove the assembly dir after you're sure they're all there
         shutil.rmtree(self.assemDir)

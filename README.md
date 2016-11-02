@@ -40,3 +40,11 @@ autocomplete and you will see a few options:
     parameters to sweep on and optomize. Currently this program supports sweeping 
     on `mer_size` and `bubble_depth_threshold`. Typing `glotk-sweep` into your
     terminal after installing will give you more details.
+
+## News
+
+### _*v0.1.13*_ - 20161102
+
+* Made glotk-sweep function by inputting each value of k to assemble for, rather
+  than using 'sweep start', 'sweep stop', and 'sweep interval'.
+  Usage is: '--slist 23 27 57' to perform assemblies for those three values
