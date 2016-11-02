@@ -17,20 +17,37 @@
 # You should have received a copy of the GNU General Public License
 # along with GloTK.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-
-title: glotk-sweep
+"""title: glotk-mitoshaper
 authr: darrin schultz
 
 This program:
-1. Reads in a meraculous config file and outputs all of the associated config
-   files to $PWD/configs
-2. The name of each run and the path to the directory is passed to a
-   multiprocessing core that controls which assemblies are executed and when.
-3. Each assembly is executed.
+  - assembles mitochondrial genomes using a seed-and-bait approach.
+  - is useful in situations in which the reference and subject
+    mitochondrial genomes may have different structures. This is a
+    common phenomenon in phyla outside of vertebrates.
+  - is not necessarily useful when mitochondrial structure is very
+    similar, as one sees in the variations between human mitogenomes.
 
-Usage: 
-"--slist 21 23 57 73" to perform assemblies for kmer sizes 21, 23, 57, 73, et cetera
+Assembly steps:
+  1. sketch
+    - Cleans up reads using Seqprep2
+    - Downsamples the data
+    - Performs a preliminary assembly with MIA
+    - makes a model of mapped reads
+  2. shape
+    - Takes output model of mitoshaper-sketch and resamples data
+    - determines seeds based on model
+    - runs MitoBIM with each seed
+  3. laminate
+    - aligns all of the "plys" (contigs) from mitoshaper-shape
+    - makes a kmer synteny matrix using the reference genome
+    - finds the correct coordinates for the new assembly
+  4. coat
+    - Feeds the new assembly into MIA using unmerged, resampled reads
+    - Generate skyline and synteny plots for the first iteration
+  5. finish
+    - Attempts to fix misassemblies
+    - generates HTML reports for each assembly
 """
 
 #import things for rest of program
@@ -69,12 +86,15 @@ class CommandLine:
         """For stage 1, the necessary arguments for the MerParse class are:
           - inputFile
           - sweep
-          - sList
+          - sStart
+          - sStop
+          - sInterval
           - asPrefix
           - asSI
           - genus
           - species
         """
+        print(sys.argv)
 
         self.parser=argparse.ArgumentParser(description=__doc__)
         self.parser.add_argument("-i", "--inputConfig",
@@ -89,10 +109,12 @@ class CommandLine:
                             required=True,
                             help="""The parameter to sweep through in the
                             assembly.""")
-        self.parser.add_argument("--slist",
-                            type=str,
-                            nargs='+',
-                            help="""The values to sweep through""")
+        self.parser.add_argument("--sstart",
+                            help="""The start for the sweep parameter""")
+        self.parser.add_argument("--sstop",
+                            help="""The stop for the sweep parameter""")
+        self.parser.add_argument("--sinterval",
+                            help="""The interval between the sweep start and stop.""")
         self.parser.add_argument("-p", "--prefix",
                             type=str,
                             default='as',
@@ -135,7 +157,39 @@ class CommandLine:
 
     def parse(self):
         self.args = self.parser.parse_args()
-        print(self.args)
+
+        # check for input errors
+        self._check_errors()
+
+    def _check_errors(self):
+        """Call this function after parsing the args to see if there are any
+        errors in the way things are input. Specifically for glotk-sweep, make
+        sure that all of the parameters for sweep have arguemnts if at least one
+        does."""
+        # use this to make sure that sweep, sstart, sstop, and sinterval
+        # all have values if one of them has values
+        # (P^Q^R^S) OR (-P and -Q and -R and -S)
+        # above is the minimal form for this logical statement in DNF
+        if not ((self._inn(self.args.sweep) and self._inn(self.args.sstart)
+                 and self._inn(self.args.sstop) and self._inn(self.args.sinterval))
+                or
+                (not self._inn(self.args.sweep) and not self._inn(self.args.sstart) and not
+                 self._inn(self.args.sstop) and not self._inn(self.args.sinterval))):
+            mutually_inclusive = ["sweep", "sstart", "sstop", "sinterval"]
+            print_str = ""
+            for each in mutually_inclusive:
+                print_str += "    {0}: {1}\n".format(each, getattr(self.args, each))
+            raise AssertionError("""You specified one or more of the --sweep,
+            --sstart, --stop, or --sinterval arguments but did not specify all of
+            them. All of them are required when running the program in sweep mode.
+            Do not specify any of these arguments if not running the program in
+            sweep mode.\n{0}""".format(print_str))
+
+    def _inn(self, value):
+        """Checks to verify that an argument is not None, aka that it has a value.
+        Lets you use boolean logic on arguments since Python doesn't have
+        mutually inclusive groups."""
+        return value is not None
 
 def mer_runner_dummy(instance):
     """This method is a helper method for class MerRunner. It allows
@@ -215,10 +269,8 @@ def main():
     # 1. Reads in a meraculous config file and outputs all of the associated config
     #    files to $PWD/configs
 
-    merparser = MerParse(myArgs.inputConfig,
-                         myArgs.sweep,
-                         myArgs.slist,
-                         myArgs.maxProcs,
+    merparser = MerParse(myArgs.inputConfig, myArgs.sweep, myArgs.sstart,
+                         myArgs.sstop, myArgs.sinterval, myArgs.maxProcs,
                          asPrefix = myArgs.prefix,
                          asSI = myArgs.index,
                          genus = myArgs.genus,
@@ -237,8 +289,7 @@ def main():
     instances = []
     for runName in configPaths:
         configPath = configPaths.get(runName)
-        #strip off the .config off the end of the runName, derived from configPath
-        thisInstance = MerRunner(runName.strip(".config"), configPath, myArgs.cleanup)
+        thisInstance = MerRunner(runName, configPath, myArgs.cleanup)
         instances.append(thisInstance)
 
     if len(instances) == 0:

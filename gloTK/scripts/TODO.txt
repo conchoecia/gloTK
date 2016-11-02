@@ -1,0 +1,4 @@
+1. Make gloTK-sweep work by having the user input all the kmer sizes instead of the program sweeping through
+2. Give gloTK-sweep a "triple option" that will generate three assemblies at once - haploid/diploiso/diploid
+3. Make a wrapper to generate a BAM file in the run directory. put it into meraculous_final. make this module take several arguments - one is which stage to generate BAM files for. Probably just make python call a shell script here. (or is it possible to do this with several calls?) 
+4. Make a command that can generate a report on a set of triple calls. This can be called standalone or with a flag in gloTK-sweep
