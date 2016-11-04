@@ -34,74 +34,79 @@ class libSeq_test_case(unittest.TestCase):
     def test_libSeq_construction(self):
         """This verifies that the LibSeq class is constructed with all of the
         parameters that are present in the meraculous config files"""
-        myLib = LibSeq()
-        values = ["wildcard", "name", "insertAvg", "insertSdev", "avgReadLn",
+        values = ["lib_seq", "wildcard1,wildcard2", "name", "insertAvg", "insertSdev", "avgReadLn",
                   "hasInnieArtifact", "isRevComped", "useForContiging",
                   "scaffRound", "useForGapClosing",
                   "5p_wiggleRoom", "3p_wiggleRoom"]
+        dummy_line = " ".join(values)
+        myLib = LibSeq(dummy_line)
+        values = [ "wildcard", "name", "insertAvg", "insertSdev", "avgReadLn",
+                  "hasInnieArtifact", "isRevComped", "useForContiging",
+                  "scaffRound", "useForGapClosing",
+                  "5p_wiggleRoom", "3p_wiggleRoom", "globs", "pairs"]
         data = {x: "" for x in values}
         #go through all the keys in the LibSeq object to make sure they match
         # all the params in the Meraculous manual
-        for key in myLib.keys():
+        for key in myLib.data.keys():
             data.pop(key)
         self.assertEqual(data, {})
 
+    def test_wrong_num_commas(self):
+        """Verifies that the wildcard string has two globs."""
+
+        with self.assertRaises(ValueError):
+            myLib = LibSeq("lib_seq /my/path/*.gz CAT 600 1 150 0 0 1 1 1 0 0")
+
+
     def test_libSeq_repr_method(self):
         """Verify that the __repr__() methods returns the correctly-formatted
-        string when using print(LibSeq())"""
-        myLib = LibSeq()
-        values = {"wildcard": "/my/path/*.gz",
-                  "name": "CAT",
-                  "insertAvg": "600",
-                  "insertSdev": "1",
-                  "avgReadLn": "150",
-                  "hasInnieArtifact": "0",
-                  "isRevComped": "0",
-                  "useForContiging": "1",
-                  "scaffRound": "1",
-                  "useForGapClosing": "1",
-                  "5p_wiggleRoom": "0",
-                  "3p_wiggleRoom": "0"}
-        for key in values:
-            myLib[key] = values[key]
-        out_str = "/my/path/*.gz CAT 600 1 150 0 0 1 1 1 0 0"
+        string when using print(LibSeq()). Also verifies that the wildcard string
+        has two globs."""
+
+        myLib = LibSeq("lib_seq /my/path/1*.gz,/my/path/2*.gz CAT 600 1 150 0 0 1 1 1 0 0")
+        out_str = "/my/path/1*.gz,/my/path/2*.gz CAT 600 1 150 0 0 1 1 1 0 0"
         self.assertEqual(str(myLib), out_str)
 
-    # def test_libSeq_remove_spaces(self):
-    #     """Test that values have spaces stripped upon entry in self.data."""
-    #     myLib = LibSeq()
-    #     values = {"wildcard": "/my/path/*.gz",
-    #               "name": "CAT",
-    #               "insertAvg": "600",
-    #               "insertSdev": "1",
-    #               "avgReadLn": "150",
-    #               "hasInnieArtifact": "0",
-    #               "isRevComped": "0",
-    #               "useForContiging": "1",
-    #               "scaffRound": "1",
-    #               "useForGapClosing": "1",
-    #               "5p_wiggleRoom": "0",
-    #               "3p_wiggleRoom": "0"}
-    #     values_spaces = {"wildcard": " /my/path/*.gz ",
-    #               "name": " CAT ",
-    #               "insertAvg": " 600 ",
-    #               "insertSdev": " 1 ",
-    #               "avgReadLn": " 150 ",
-    #               "hasInnieArtifact": " 0 ",
-    #               "isRevComped": " 0 ",
-    #               "useForContiging": " 1 ",
-    #               "scaffRound": " 1 ",
-    #               "useForGapClosing": " 1 ",
-    #               "5p_wiggleRoom": " 0 ",
-    #               "3p_wiggleRoom": " 0 "}
-    #     for key in values_spaces:
-    #         myLib[key] = values_spaces[key]
-    #     #the dict obkect in myLib should equal the values dict above.
-    #     # aka all extraneous spaces should be removed
-    #     # this is a redundant feature in the software since the MerParse
-    #     # object splits on spaces, but this is useful if I need to modify
-    #     # LibSeq objects with other classes.
-    #     self.assertEqual(myLib, values)
+    def test_libSeq_extraspaces_right(self):
+        """Verify that extra spaces won't mess up the parser"""
+
+        myLib = LibSeq("""lib_seq /my/path/1*.gz ,/my/path/2*.gz  CAT     600 1 150 0
+        0 1 1 1 0 0""")
+        out_str = "/my/path/1*.gz,/my/path/2*.gz CAT 600 1 150 0 0 1 1 1 0 0"
+        self.assertEqual(str(myLib), out_str)
+
+    def test_libSeq_extraspaces_middle(self):
+        """Verify that extra spaces won't mess up the parser"""
+
+        myLib = LibSeq("""lib_seq /my/path/1*.gz , /my/path/2*.gz  CAT     600 1 150 0
+        0 1 1 1 0 0""")
+        out_str = "/my/path/1*.gz,/my/path/2*.gz CAT 600 1 150 0 0 1 1 1 0 0"
+        self.assertEqual(str(myLib), out_str)
+
+    def test_libSeq_extraspaces_left(self):
+        """Verify that extra spaces won't mess up the parser"""
+
+        myLib = LibSeq("""lib_seq /my/path/1*.gz, /my/path/2*.gz  CAT     600 1 150 0
+        0 1 1 1 0 0""")
+        out_str = "/my/path/1*.gz,/my/path/2*.gz CAT 600 1 150 0 0 1 1 1 0 0"
+        self.assertEqual(str(myLib), out_str)
+
+    def test_libSeq_toomanycommas(self):
+        """Verify that an error is thrown if there are too many commas"""
+
+        with self.assertRaises(ValueError):
+            myLib = LibSeq("lib_seq /my,/p,ath/*.gz,path2*.gz CAT 600 1 150 0 0 1 1 1 0 0")
+
+    def test_libSeq_nocommas(self):
+        """Verify that an error is thrown if there are no  commas"""
+
+        with self.assertRaises(ValueError):
+            myLib = LibSeq("lib_seq /my/path/*.gzpath2*.gz CAT 600 1 150 0 0 1 1 1 0 0")
+
+
+
+
+
 
 
 if __name__ == '__main__':
