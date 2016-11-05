@@ -33,12 +33,11 @@ gglotk-project -i <location of Meraculous config> -g pleu -s bach
 """
 
 #import things for rest of program
-import sys
 import argparse
+import copy
 import os
-
-#stuff for call shell commands
-import subprocess
+import shutil
+import sys
 
 
 #import gloTK stuff
@@ -110,16 +109,19 @@ def main():
 
     # 2. Reads in a meraculous config file and outputs all of the associated config
     #    files to $PWD/glotk_info
-    merparser = MerParse(myArgs.inputConfig)
-    params = merparser.params
+    configFile = ConfigParse(myArgs.inputConfig)
     gloTK_info=os.path.join(cwd, "gloTK_info")
     gloTK.utils.safe_mkdir(gloTK_info)
-    shutil.copyfile(myArgs.inputConfig, os.path.join(gloTK_info, default.config))
+    shutil.copyfile(myArgs.inputConfig, os.path.join(gloTK_info, "project_init.config"))
+    configFile.save_yaml(os.path.join(gloTK_info, "input_config.yaml"))
 
     # 3. Make symlinks for each read pair
-    readLibSets = read_splitter(params)
-    
-
+    gloTK_reads = os.path.join(cwd, "gloTK_reads")
+    gloTK.utils.safe_mkdir(gloTK_reads)
+    reads_0 = os.path.join(gloTK_reads, "reads_0")
+    gloTK.utils.safe_mkdir(reads_0)
+    params_new = configFile.sym_reads_new_config(reads_0, sym=True)
+    params_new = configFile.save_yaml(os.path.join(reads_0, "reads_0.yaml"))
 
 if __name__ == "__main__":
     sys.exit(main())

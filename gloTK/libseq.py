@@ -28,6 +28,7 @@ in the Meraculous config files.
 
 from collections import UserDict
 import glob
+import os
 
 class LibSeq(UserDict):
     def __init__(self, line):
@@ -95,17 +96,20 @@ class LibSeq(UserDict):
                     the program was looking for two glob filepaths, but instead
                     found {}: {}""".format(len(globs), globs))
                 self.data["globs"] = globs
-                forwards = glob.glob(globs[0])
-                reverses = glob.glob(globs[1])
-                if not len(forwards) == len(reverses):
+                forwards = glob.glob(os.path.abspath(globs[0]))
+                reverses = glob.glob(os.path.abspath(globs[1]))
+                if (len(forwards) < 1) or (len(reverses) < 1):
+                    raise ValueError("""ERROR: no read files were found. Please
+                    check the glob string and/or use absolute file paths.""")
+                if len(forwards) != len(reverses):
                     raise ValueError("""ERROR: the number of reverse read files does not
                     match the number of forward read files""")
                 self.data["pairs"] = [x for x in zip(sorted(forwards), sorted(reverses))]
             self.data[self.indices.get(index)] = line[index]
 
-    def __repr__(self):
-        print_str = ""
-        for index in sorted(self.indices):
-            value = self.data.get(self.indices.get(index))
-            print_str += "{0} ".format(value.replace(" ",""))
-        return print_str[0:-1]
+    # def __repr__(self):
+    #     print_str = ""
+    #     for index in sorted(self.indices):
+    #         value = self.data.get(self.indices.get(index))
+    #         print_str += "{0} ".format(value.replace(" ",""))
+    #     return print_str[0:-1]

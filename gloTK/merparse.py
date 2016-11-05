@@ -37,7 +37,9 @@ from collections import UserDict
 from numbers import Number
 from time import strftime as tfmt
 from string import ascii_letters, digits
+import copy
 import os
+import yaml
 
 class MerParse:
     """This class:
@@ -58,7 +60,7 @@ class MerParse:
     """
     def __init__(self, inputFile, sweep=None, sList=None, lnProcs=0,
                  asPrefix = "as", asSI = 0, genus = None, species = None,
-                 triplet=False): 
+                 triplet=False):
         # ----------------- Run triplet assembly -------------------------------
         self.triplet = triplet
         # --------------- Config File Parameters -------------------------------
@@ -248,54 +250,85 @@ class ConfigParse:
 
     def __init__(self, inputFile):
         self.inputFile = inputFile
-        self.params = {"lib_seq": [],
-                       "genome_size": -0.1,
-                       "mer_size": -1,
-                       "min_depth_cutoff": 0,
-                       "num_prefix_blocks": -1,
-                       "diploid_mode": 0,
-                       "use_cluster": 0,
-                       "no_read_validation": 0,
-                       "fallback_on_est_insert_size": 0,
-                       "gap_close_aggressive": 0,
-                       "gap_close_rpt_depth_ratio": 2.0,
-                       "local_num_procs": 1,
-                       "local_max_retries": 0}
-        self.diploid_mode = {"bubble_depth_threshold": 0,
-                             "strict_haplotypes": 1}
-        # makes two lists that contain which strings refer to things that should
-        #  be converted to ints vs floats
-        self.to_int = [x for x in self.params if isinstance(self.params[x], int)] + [
-            y for y in self.diploid_mode if isinstance(self.diploid_mode[y], int)]
-        self.to_float = [x for x in self.params if isinstance(self.params[x], float)] + [
-            y for y in self.diploid_mode if isinstance(self.diploid_mode[y], float)]
+        if self.inputFile.endswith(".yaml"):
+            with open(self.inputFile,'r') as infile:
+                self.params = yaml.load(infile)
+        else:
+            self.params = {"lib_seq": [],
+                           "genome_size": -0.1,
+                           "mer_size": -1,
+                           "min_depth_cutoff": 0,
+                           "num_prefix_blocks": -1,
+                           "diploid_mode": 0,
+                           "use_cluster": 0,
+                           "no_read_validation": 0,
+                           "fallback_on_est_insert_size": 0,
+                           "gap_close_aggressive": 0,
+                           "gap_close_rpt_depth_ratio": 2.0,
+                           "local_num_procs": 1,
+                           "local_max_retries": 0}
+            self.diploid_mode = {"bubble_depth_threshold": 0,
+                                 "strict_haplotypes": 1}
+            # makes two lists that contain which strings refer to things that should
+            #  be converted to ints vs floats
+            self.to_int = [x for x in self.params if isinstance(self.params[x], int)] + [
+                y for y in self.diploid_mode if isinstance(self.diploid_mode[y], int)]
+            self.to_float = [x for x in self.params if isinstance(self.params[x], float)] + [
+                y for y in self.diploid_mode if isinstance(self.diploid_mode[y], float)]
 
-        # for debugging purposes, makes a list of values that were assigned a
-        #  negative value upon initialization, showing that they were not
-        #  specified in the config file and need to be changed. Raise an error
-        #  in the read_config file.
-        # self.config_specified are things that must be specified in the config
-        #  file, so if they are negative we know that the user made a mistake.
-        # self.config_unspecified are things that have a default value already,
-        #  so if they are negative then the user mis-entered something in the
-        # config file.
-        self.config_specified = [x for x in
-                                 [u for u in self.params
-                                  if isinstance(self.params[u], Number)]
-                                 if self.params[x] < 0]
-        self.config_unspecified = [x for x in
-                                   [u for u in self.params
-                                    if isinstance(self.params[u], Number)]
-                                   if self.params[x] >= 0] + [y for y in
-                                   [v for v in self.diploid_mode
-                                    if isinstance(self.diploid_mode[v], Number)]
-                                   if self.diploid_mode[y] >= 0]
-        self.read_config()
+            # for debugging purposes, makes a list of values that were assigned a
+            #  negative value upon initialization, showing that they were not
+            #  specified in the config file and need to be changed. Raise an error
+            #  in the read_config file.
+            # self.config_specified are things that must be specified in the config
+            #  file, so if they are negative we know that the user made a mistake.
+            # self.config_unspecified are things that have a default value already,
+            #  so if they are negative then the user mis-entered something in the
+            # config file.
+            self.config_specified = [x for x in
+                                     [u for u in self.params
+                                      if isinstance(self.params[u], Number)]
+                                     if self.params[x] < 0]
+            self.config_unspecified = [x for x in
+                                       [u for u in self.params
+                                        if isinstance(self.params[u], Number)]
+                                       if self.params[x] >= 0] + [y for y in
+                                       [v for v in self.diploid_mode
+                                        if isinstance(self.diploid_mode[v], Number)]
+                                       if self.diploid_mode[y] >= 0]
+            self.read_config()
 
     def space_error(self, line):
         raise ValueError(
             """ERROR: There are too many spaces in this line in your config
             file: {0}""".format(line))
+
+    def save_yaml(self, outFile):
+        """saves the config parameters to a json file"""
+        with open(outFile,'w') as myfile:
+            print(yaml.dump(self.params), file=myfile)
+
+    def sym_reads_new_config(self, newDir, sym=False, mv=False):
+        """This moves the read files and renames the glob, outputs a new
+        ConfigParse object with updated values"""
+        newParams = copy.copy(self)
+        for i in range(0,len(self.params["lib_seq"])):
+            lib_seq = self.params["lib_seq"][i]
+            #update the glob
+            newParams.params["lib_seq"][i]["globs"] = [os.path.join(
+                newDir,os.path.basename(x)) for x in lib_seq["globs"]]
+            #now update the file paths and move/symlink if necessary
+            for j in range(0, len(lib_seq["pairs"])):
+                forward, reverse = lib_seq["pairs"][j]
+                new_forward = os.path.join(newDir, os.path.basename(forward))
+                new_reverse = os.path.join(newDir, os.path.basename(reverse))
+                #move or symlink the files
+                if sym:
+                    os.symlink(forward, new_forward)
+                    os.symlink(reverse, new_reverse)
+                #update the reads in the new config
+                newParams.params["lib_seq"][i]["pairs"][j] = [new_forward, new_reverse]
+        return newParams
 
     def assign(self, dict_name, key, value):
         """This assigns an input string to either a float or int and saves it in
