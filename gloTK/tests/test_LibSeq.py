@@ -25,20 +25,27 @@ import unittest
 from gloTK import LibSeq
 from time import strftime as tfmt
 import re
+import os
 import ast
 
 
 class libSeq_test_case(unittest.TestCase):
     """Tests that libSeq works correctly, like a dictionary
     """
+    def setUp(self):
+        self.pwd = os.path.dirname(os.path.abspath(__file__))
+        self.testConfig = os.path.join(self.pwd, "phix174Test/libSeq.config")
+        lines=[]
+        with open(self.testConfig, "r") as f:
+            for line in f:
+                if line.strip():
+                    lines.append(line.strip())
+        self.values = lines[0].split()
+
     def test_libSeq_construction(self):
         """This verifies that the LibSeq class is constructed with all of the
         parameters that are present in the meraculous config files"""
-        values = ["lib_seq", "wildcard1,wildcard2", "name", "insertAvg", "insertSdev", "avgReadLn",
-                  "hasInnieArtifact", "isRevComped", "useForContiging",
-                  "scaffRound", "useForGapClosing",
-                  "5p_wiggleRoom", "3p_wiggleRoom"]
-        dummy_line = " ".join(values)
+        dummy_line = " ".join(self.values)
         myLib = LibSeq(dummy_line)
         values = [ "wildcard", "name", "insertAvg", "insertSdev", "avgReadLn",
                   "hasInnieArtifact", "isRevComped", "useForContiging",
@@ -55,40 +62,42 @@ class libSeq_test_case(unittest.TestCase):
         """Verifies that the wildcard string has two globs."""
 
         with self.assertRaises(ValueError):
-            myLib = LibSeq("lib_seq /my/path/*.gz CAT 600 1 150 0 0 1 1 1 0 0")
-
+            myLib = LibSeq("lib_seq phix174Test/reads/SRR353630_2500_1*.fastq.gz CAT 600 1 150 0 0 1 1 1 0 0")
 
     def test_libSeq_repr_method(self):
         """Verify that the __repr__() methods returns the correctly-formatted
         string when using print(LibSeq()). Also verifies that the wildcard string
         has two globs."""
 
-        myLib = LibSeq("lib_seq /my/path/1*.gz,/my/path/2*.gz CAT 600 1 150 0 0 1 1 1 0 0")
-        out_str = "/my/path/1*.gz,/my/path/2*.gz CAT 600 1 150 0 0 1 1 1 0 0"
+        myLib = LibSeq("lib_seq phix174Test/reads/SRR353630_2500_1*.fastq.gz,phix174Test/reads/SRR353630_2500_2*.fastq.gz CAT 600 1 150 0 0 1 1 1 0 0")
+        readBase=os.path.join(self.pwd, "phix174Test/reads")
+        # forward=os.path.join(readBase, 
+        out_str = "phix174Test/reads/SRR353630_2500_1*.fastq.gz,phix174Test/reads/SRR353630_2500_2*.fastq.gz CAT 600 1 150 0 0 1 1 1 0 0"
+        print(str(myLib))
         self.assertEqual(str(myLib), out_str)
 
     def test_libSeq_extraspaces_right(self):
         """Verify that extra spaces won't mess up the parser"""
 
-        myLib = LibSeq("""lib_seq /my/path/1*.gz ,/my/path/2*.gz  CAT     600 1 150 0
+        myLib = LibSeq("""lib_seq  phix174Test/reads/SRR353630_2500_1*.fastq.gz ,phix174Test/reads/SRR353630_2500_2*.fastq.gz  CAT     600 1 150 0
         0 1 1 1 0 0""")
-        out_str = "/my/path/1*.gz,/my/path/2*.gz CAT 600 1 150 0 0 1 1 1 0 0"
+        out_str = "phix174Test/reads/SRR353630_2500_1*.fastq.gz,phix174Test/reads/SRR353630_2500_2*.fastq.gz CAT 600 1 150 0 0 1 1 1 0 0"
         self.assertEqual(str(myLib), out_str)
 
     def test_libSeq_extraspaces_middle(self):
         """Verify that extra spaces won't mess up the parser"""
 
-        myLib = LibSeq("""lib_seq /my/path/1*.gz , /my/path/2*.gz  CAT     600 1 150 0
+        myLib = LibSeq("""lib_seq phix174Test/reads/SRR353630_2500_1*.fastq.gz , phix174Test/reads/SRR353630_2500_2*.fastq.gz CAT     600 1 150 0
         0 1 1 1 0 0""")
-        out_str = "/my/path/1*.gz,/my/path/2*.gz CAT 600 1 150 0 0 1 1 1 0 0"
+        out_str = "phix174Test/reads/SRR353630_2500_1*.fastq.gz,phix174Test/reads/SRR353630_2500_2*.fastq.gz CAT 600 1 150 0 0 1 1 1 0 0"
         self.assertEqual(str(myLib), out_str)
 
     def test_libSeq_extraspaces_left(self):
         """Verify that extra spaces won't mess up the parser"""
 
-        myLib = LibSeq("""lib_seq /my/path/1*.gz, /my/path/2*.gz  CAT     600 1 150 0
+        myLib = LibSeq("""lib_seq phix174Test/reads/SRR353630_2500_1*.fastq.gz, phix174Test/reads/SRR353630_2500_2*.fastq.gz CAT     600 1 150 0
         0 1 1 1 0 0""")
-        out_str = "/my/path/1*.gz,/my/path/2*.gz CAT 600 1 150 0 0 1 1 1 0 0"
+        out_str = "phix174Test/reads/SRR353630_2500_1*.fastq.gz,phix174Test/reads/SRR353630_2500_2*.fastq.gz CAT 600 1 150 0 0 1 1 1 0 0"
         self.assertEqual(str(myLib), out_str)
 
     def test_libSeq_toomanycommas(self):

@@ -61,6 +61,7 @@ class LibSeq(UserDict):
             lib_seq line. There should be one, between the two filepath
             globs.""")
         line = [x.strip() for x in line.split() if x]
+        #print(line)
 
         #This block tries to fix user input if there is an inappropriate
         # number of commas or spaces associated with commas
@@ -68,7 +69,7 @@ class LibSeq(UserDict):
             commas = [x for x in line if "," in x]
             if commas:
                 #this handles the case if there was an extra space added on
-                # either side of the comma
+                # both sides of the comma
                 if (len(commas) == 1) and (commas[0] != ','):
                     if (commas[0][-1] == ',') or (commas[0][0] == ','):
                         line = [line[0]] + ["".join(line[1:3])] + line[3:]
@@ -79,13 +80,12 @@ class LibSeq(UserDict):
 
         #make sure there is an appropriate numer of elements in list
         if (len(line) ) != 13:
-            print(line)
-            print(commas)
             raise ValueError("""ERROR: There are {0} values in the lib_seq line when
                              there should be 12. Check your input meraculous
                              config file for errors and make sure that it matches
                              the specification for the Meraculous manual.""".format(
                                  len(line)))
+
         for index in self.indices:
             if index == 1:
                 globs = [x.strip() for x in line[1].split(',') if x]
@@ -96,20 +96,30 @@ class LibSeq(UserDict):
                     the program was looking for two glob filepaths, but instead
                     found {}: {}""".format(len(globs), globs))
                 self.data["globs"] = globs
+                #Note that glob.glob returns an empty list if the file or glob
+                # filepath does not exist.
                 forwards = glob.glob(os.path.abspath(globs[0]))
                 reverses = glob.glob(os.path.abspath(globs[1]))
+                # print(os.path.abspath(globs[0]))
+                # print("globs: ", globs)
+                # print("forwards: ", forwards)
+                # print("reverses: ", reverses)
+                #At this point the
                 if (len(forwards) < 1) or (len(reverses) < 1):
-                    raise ValueError("""ERROR: no read files were found. Please
-                    check the glob string and/or use absolute file paths.""")
+                    raise ValueError("""ERROR: no read files were found. Please check the glob string
+                    and/or use absolute file paths. A common source of
+                    this error is using relative filepaths from the
+                    incorrect directory, or referring to files that do
+                    not exist.""")
                 if len(forwards) != len(reverses):
                     raise ValueError("""ERROR: the number of reverse read files does not
                     match the number of forward read files""")
                 self.data["pairs"] = [x for x in zip(sorted(forwards), sorted(reverses))]
             self.data[self.indices.get(index)] = line[index]
 
-    # def __repr__(self):
-    #     print_str = ""
-    #     for index in sorted(self.indices):
-    #         value = self.data.get(self.indices.get(index))
-    #         print_str += "{0} ".format(value.replace(" ",""))
-    #     return print_str[0:-1]
+    def __repr__(self):
+        print_str = ""
+        for index in sorted(self.indices):
+            value = self.data.get(self.indices.get(index))
+            print_str += "{0} ".format(value.replace(" ",""))
+        return print_str[0:-1]
