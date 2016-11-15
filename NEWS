@@ -18,9 +18,13 @@ project_dir/
 |  |  assemblynumber_to_runname.txt
 |  |
 |  |--activity_log/
-|        as000.log
-|        as001.log
-|        etcetera.log
+|  |     as000.log
+|  |     as001.log
+|  |     etcetera.log
+|  |
+|  |--read_configs/
+|        reads0.yaml #this is the initial yaml file for imported reads
+|        reads1.yaml #reads generated from Seqprep, trimmomatic, et cetera
 |
 |--glotk_assemblies
 |  |--as000_<assembly_name>/

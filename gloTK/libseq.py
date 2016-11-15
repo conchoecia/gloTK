@@ -31,7 +31,7 @@ import glob
 import os
 
 class LibSeq(UserDict):
-    def __init__(self, line):
+    def __init__(self, line, configpath=False):
         self.indices = {
                   1: "wildcard",
                   2: "name",
@@ -46,7 +46,16 @@ class LibSeq(UserDict):
                   11: "5p_wiggleRoom",
                   12: "3p_wiggleRoom"}
         self.data = {self.indices.get(x): "" for x in self.indices}
+        if configpath:
+            self.originalPath = os.getcwd()
+            self.configDir = os.path.dirname(configpath)
+            #change the directory to utilize relative links in config files
+            os.chdir(self.configDir)
         self.libseq_parse(line)
+        #print(self.data["pairs"])
+        if configpath:
+            #change the directory back to what it was
+            os.chdir(self.originalPath)
 
     def libseq_parse(self, line):
         """This method parses a line containing a lib_seq string and adds it to
@@ -88,7 +97,7 @@ class LibSeq(UserDict):
 
         for index in self.indices:
             if index == 1:
-                globs = [x.strip() for x in line[1].split(',') if x]
+                globs = [os.path.abspath(x.strip()) for x in line[1].split(',') if x]
                 #make sure there are only two filepaths to search for globs
                 if len(globs) != 2:
                     raise ValueError("""ERROR: remember to split your glob
@@ -106,18 +115,30 @@ class LibSeq(UserDict):
                 # print("reverses: ", reverses)
                 #At this point the
                 if (len(forwards) < 1) or (len(reverses) < 1):
-                    raise ValueError("""ERROR: no read files were found. Please check the glob string
-                    and/or use absolute file paths. A common source of
-                    this error is using relative filepaths from the
-                    incorrect directory, or referring to files that do
-                    not exist.""")
+                    # print("forwards: ", forwards)
+                    # print("reverses: ", reverses)
+
+                    report = []
+                    if len(forwards) < 1:
+                        report.append(globs[0])
+                    if len(reverses) < 1:
+                        report.append(globs[1])
+                    raise ValueError("""ERROR: no read files were found for the glob strings,
+                    {}.
+
+                    Please check the glob string and/or use absolute
+                    file paths. A common source of this error is using
+                    relative filepaths from the incorrect directory, or
+                    referring to files that do not exist.""".format(report))
                 if len(forwards) != len(reverses):
                     raise ValueError("""ERROR: the number of reverse read files does not
                     match the number of forward read files""")
+                #zip the pairs together into tuples, not lists
                 self.data["pairs"] = [x for x in zip(sorted(forwards), sorted(reverses))]
+
             self.data[self.indices.get(index)] = line[index]
 
-    def __repr__(self):
+    def __str__(self):
         print_str = ""
         for index in sorted(self.indices):
             value = self.data.get(self.indices.get(index))

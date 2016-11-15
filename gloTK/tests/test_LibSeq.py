@@ -73,7 +73,6 @@ class libSeq_test_case(unittest.TestCase):
         readBase=os.path.join(self.pwd, "phix174Test/reads")
         # forward=os.path.join(readBase, 
         out_str = "phix174Test/reads/SRR353630_2500_1*.fastq.gz,phix174Test/reads/SRR353630_2500_2*.fastq.gz CAT 600 1 150 0 0 1 1 1 0 0"
-        print(str(myLib))
         self.assertEqual(str(myLib), out_str)
 
     def test_libSeq_extraspaces_right(self):

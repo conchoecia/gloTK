@@ -44,7 +44,7 @@ import yaml
 class MerParse:
     """This class:
 
-    1. reads in an input file and extrapolates all of the possible
+    1. reads in an input file into ConfigParse and extrapolates all of the possible
        parameters for Meraculous
     2. Choose a parameter to sweep on and calculates the sweep intervals
     3. Output all of the config files to <$PWD>/mer_configs
@@ -229,7 +229,7 @@ class MerParse:
                 for key in self.params:
                     if key == "lib_seq":
                         for each in self.params["lib_seq"]:
-                            print(str(each))
+                            #print(str(each))
                             print("lib_seq {0}".format(str(each)), file = f)
                     else:
                         if key in assemParam:
@@ -356,7 +356,7 @@ class ConfigParse:
                         if param in self.params:
                             if param == "lib_seq":
                                 #add a libseq object to the libseq key in self.params
-                                LS = LibSeq(line)
+                                LS = LibSeq(line, self.inputFile)
                                 #right here you need to pass the actual LS object
                                 # to take adavantage of its __repr__ method
                                 self.params["lib_seq"].append(LS)

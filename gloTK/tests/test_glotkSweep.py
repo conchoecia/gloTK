@@ -81,10 +81,10 @@ class assembly_test_case(unittest.TestCase):
         print(__file__)
         print("in sweeps, testRun Dir is:")
         print(self.testRunDir)
-        print( __file__)
-        print( os.path.join(os.path.dirname(__file__), '..'))
-        print( os.path.dirname(os.path.realpath(__file__)))
-        print( os.path.abspath(os.path.dirname(__file__)))
+        # print( __file__)
+        # print( os.path.join(os.path.dirname(__file__), '..'))
+        # print( os.path.dirname(os.path.realpath(__file__)))
+        # print( os.path.abspath(os.path.dirname(__file__)))
 
         os.chdir(self.testRunDir)
         #make sure symlink for reads exists
@@ -194,9 +194,9 @@ class assembly_test_case(unittest.TestCase):
         print("in sweeps, testRun Dir is:")
         print(self.testRunDir)
         print( __file__)
-        print( os.path.join(os.path.dirname(__file__), '..'))
-        print( os.path.dirname(os.path.realpath(__file__)))
-        print( os.path.abspath(os.path.dirname(__file__)))
+        # print( os.path.join(os.path.dirname(__file__), '..'))
+        # print( os.path.dirname(os.path.realpath(__file__)))
+        # print( os.path.abspath(os.path.dirname(__file__)))
 
 
 if __name__ == '__main__':

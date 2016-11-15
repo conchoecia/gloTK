@@ -31,8 +31,9 @@ import ast
 class merParse_test_case(unittest.TestCase):
     """Tests that the merParse class works correctly"""
     def setUp(self):
-        self.configPath = os.path.join(os.path.abspath(os.path.dirname(__file__)),"ksweep_test.config")
+        self.configPath = os.path.join(os.path.abspath(os.path.dirname(__file__)),"phix174Test/ksweep_test.config")
         self.testParser = ConfigParse(self.configPath)
+        self.pwd = os.path.dirname(os.path.abspath(__file__))
 
         self.sweep = "mer_size"
         self.sList = ['21', '23', '25', '27', '29',
@@ -50,11 +51,15 @@ class merParse_test_case(unittest.TestCase):
                                 self.sList,
                                 self.lnProcs)
 
-        self.correctly_parsed_ls1 = {"wildcard": "/mydir/fwd_data*.1.fastq.gz,/mydir/rev_data*.2.fastq.gz",
+        self.correctly_parsed_ls1 = {"wildcard": "reads/SRR353630_2500_1*.fastq.gz,reads/SRR353630_2500_2*.fastq.gz",
                             "name": "SP2013",
-                            "globs":["/mydir/fwd_data*.1.fastq.gz",
-                                     "/mydir/rev_data*.2.fastq.gz"],
-                            "pairs":[],
+                            "globs":[os.path.join(self.pwd, "phix174Test/reads/SRR353630_2500_1*.fastq.gz"),
+                                     os.path.join(self.pwd, "phix174Test/reads/SRR353630_2500_2*.fastq.gz")],
+                            "pairs":[(os.path.join(self.pwd, 'phix174Test/reads/SRR353630_2500_1.fastq.gz'),
+                                     os.path.join(self.pwd, 'phix174Test/reads/SRR353630_2500_2.fastq.gz')),
+
+                                     (os.path.join(self.pwd, 'phix174Test/reads/SRR353630_2500_1_2.fastq.gz'),
+                                     os.path.join(self.pwd, 'phix174Test/reads/SRR353630_2500_2_2.fastq.gz'))], 
                             "insertAvg": "720",
                             "insertSdev": "100" ,
                             "avgReadLn": "100",
@@ -67,11 +72,16 @@ class merParse_test_case(unittest.TestCase):
                             "3p_wiggleRoom": "0"}
 
 
-        self.correctly_parsed_ls2 = {"wildcard": "/mydir1*.fastq.gz,/mydir2*.fastq.gz",
-                            "globs": ["/mydir1*.fastq.gz",
-                                      "/mydir2*.fastq.gz"],
-                            "pairs":[],
+        self.correctly_parsed_ls2 = {"wildcard": "reads/SRR353630_2500_1*.fastq.gz,reads/SRR353630_2500_2*.fastq.gz",
                             "name": "SPAGET",
+                            "globs":[os.path.join(self.pwd, "phix174Test/reads/SRR353630_2500_1*.fastq.gz"),
+                                     os.path.join(self.pwd, "phix174Test/reads/SRR353630_2500_2*.fastq.gz")],
+                            "pairs":[(os.path.join(self.pwd, 'phix174Test/reads/SRR353630_2500_1.fastq.gz'),
+                                     os.path.join(self.pwd, 'phix174Test/reads/SRR353630_2500_2.fastq.gz')),
+
+                                     (os.path.join(self.pwd, 'phix174Test/reads/SRR353630_2500_1_2.fastq.gz'),
+                                     os.path.join(self.pwd, 'phix174Test/reads/SRR353630_2500_2_2.fastq.gz'))], 
+
                             "insertAvg": "555",
                             "insertSdev": "400" ,
                             "avgReadLn": "150",
@@ -98,7 +108,7 @@ class merParse_test_case(unittest.TestCase):
                        "local_num_procs": 27,
                        "local_max_retries": 0}
         parsed_diploid_mode = {"bubble_depth_threshold": 0,
-                             "strict_haplotypes": 1} 
+                             "strict_haplotypes": 1}
         self.maxDiff = None
         self.assertEqual(self.testParser.params, parsed_params)
         self.assertEqual(self.testParser.diploid_mode, parsed_diploid_mode)
