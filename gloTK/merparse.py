@@ -324,6 +324,12 @@ class ConfigParse:
                 new_reverse = os.path.join(newDir, os.path.basename(reverse))
                 #move or symlink the files
                 if sym:
+                    for each in [new_forward, new_reverse]:
+                        if os.path.exists(each):
+                            raise ValueError("""Attempted to make a symlink for
+                            a reads file, but it already exists. Chances are
+                            that you used the same reads for two lines in the
+                            Meraculous config file""")
                     os.symlink(forward, new_forward)
                     os.symlink(reverse, new_reverse)
                 #update the reads in the new config

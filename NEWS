@@ -1,5 +1,5 @@
 ====================
- v0.1.15 - 
+ v0.1.15 - 20161116 
 ====================
 
 * This version incorporates glotk-project. This script reads in a config file
@@ -40,13 +40,13 @@ project_dir/
 |--glotk_reads
 |  |  reads.log
 |  |
-|  |--set0_raw/
+|  |--reads0/
 |  |     <forward_reads_symlink>.fq.gz
 |  |     <reverse_reads_symlink>.fq.gz
 |  |
-|  |--set1_seqprep/
-|        <processed_forward_symlink>.fq.gz
-|        <processed_reverse_symlink>.fq.gz
+|  |--reads1/
+|        <processed_forward>.fq.gz
+|        <processed_reverse>.fq.gz
 |
 |--glotk_fastqc
 |--glotk_kmers

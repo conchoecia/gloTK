@@ -99,6 +99,7 @@ def main():
         sys.exit(1)
     parser.parse()
     myArgs = parser.args
+    print(myArgs)
 
     # 1. Verify that the current directory isn't already a gloTK project
     cwd = os.path.abspath(os.getcwd())
@@ -118,10 +119,14 @@ def main():
     # 3. Make symlinks for each read pair
     gloTK_reads = os.path.join(cwd, "gloTK_reads")
     gloTK.utils.safe_mkdir(gloTK_reads)
-    reads_0 = os.path.join(gloTK_reads, "reads_0")
-    gloTK.utils.safe_mkdir(reads_0)
-    params_new = configFile.sym_reads_new_config(reads_0, sym=True)
-    params_new = configFile.save_yaml(os.path.join(reads_0, "reads_0.yaml"))
+    reads0 = os.path.join(gloTK_reads, "reads0")
+    gloTK.utils.safe_mkdir(reads0)
+      # the files get saved in `project_dir/glotk_reads/reads0
+    params_new = configFile.sym_reads_new_config(reads0, sym=True)
+      # the yaml config files get saved in `project_dir/glotk_info/read_configs/`
+    read_params = os.path.join(gloTK_info, "read_configs")
+    gloTK.utils.safe_mkdir(read_params)
+    params_new = configFile.save_yaml(os.path.join(read_params, "reads0.yaml"))
 
 if __name__ == "__main__":
     sys.exit(main())
