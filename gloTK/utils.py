@@ -78,6 +78,20 @@ def safe_mkdir(path):
   Or does part of that path already exist as a regular file?""" % (path, e))
     return os.path.abspath(path)
 
+def dir_is_glotk(path):
+    """check that the current directory is a glotk project folder"""
+    test_set = set(["gloTK_info", "gloTK_assemblies",
+                    "gloTK_configs", "gloTK_reads",
+                    "gloTK_fastqc", "gloTK_kmer",
+                    "gloTK_reports"])
+    #http://stackoverflow.com/questions/11968976/
+    files = set([f for f in os.listdir('.') if os.path.isdir(f)])
+    intersection = test_set.intersection(files)
+    if len(intersection) > 0:
+        return True
+    else:
+        return False
+
 def timestamp():
     """
     Returns the current time in :samp:`YYYY-MM-DD HH:MM:SS` format.

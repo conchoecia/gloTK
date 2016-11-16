@@ -19,15 +19,19 @@
 
 """@author Darrin Schultz
 This class tests the classes and methods for utils.py
+
+Thanks to Mark Howison and Casey Dunn @ Brown for inspiration and direct source
+for some of the code in this file. See Biolite @ https://bitbucket.org/caseywdunn/biolite
 """
 
 import unittest
 from gloTK.wrappers import Seqprep
-from gloTK.utils import fastq_info, fastx_basename
+import gloTK.utils
 
-import os
-import subprocess
 import gzip
+import os
+import shutil
+import subprocess
 
 class utils_test_case(unittest.TestCase):
     """Tests that the functions in utils work correctly"""
@@ -36,8 +40,7 @@ class utils_test_case(unittest.TestCase):
         self.forwardPath = os.path.join(self.readPath, "SRR353630_2500_1.fastq.gz")
 
     def test_fastqParse(self):
-        print(self.forwardPath)
-        result = fastx_basename(self.forwardPath)
+        result = gloTK.utils.fastx_basename(self.forwardPath)
         self.assertEqual("SRR353630_2500_1", result)
 
     def test_unmerged(self):
@@ -54,10 +57,25 @@ class utils_test_case(unittest.TestCase):
                    "numGCBases": 171574,
                    "avgReadLen": 150}
 
-        info = fastq_info(self.forwardPath)
+        info = gloTK.utils.fastq_info(self.forwardPath)
 
         for key in correct:
             self.assertEqual(correct[key], info[key])
+
+    def test_is_gloTK(self):
+        """Tests that gloTK.utils.dir_is_glotk() works by first verifying in the
+        negative case, then the positive case. This method cleans up the
+        directories it creates."""
+        testcwd = os.path.dirname(os.path.abspath(__file__))
+        os.chdir(testcwd)
+        testgloTK = os.path.join(testcwd, "gloTK_assemblies")
+        if os.path.isdir(testgloTK):
+            shutil.rmtree(testgloTK)
+        self.assertEqual(False, gloTK.utils.dir_is_glotk(testcwd))
+        gloTK.utils.safe_mkdir(testgloTK)
+        #IMPORTANT - do not chage testgloTK in shutil.rmtree to another dir
+        self.assertEqual(True, gloTK.utils.dir_is_glotk(testgloTK))
+        shutil.rmtree(testgloTK)
 
 if __name__ == '__main__':
     unittest.main()

@@ -22,7 +22,7 @@ This class tests the classes and methods for glotk-mer-ksweep.py
 """
 
 import unittest
-from gloTK import MerParse, LibSeq
+from gloTK import MerParse, LibSeq, ConfigParse
 from time import strftime as tfmt
 import os
 import re
@@ -31,7 +31,10 @@ import ast
 class merParse_test_case(unittest.TestCase):
     """Tests that the merParse class works correctly"""
     def setUp(self):
-        self.configPath = os.path.join(os.path.abspath(os.path.dirname(__file__)),"ksweep_test.config")
+        self.configPath = os.path.join(os.path.abspath(os.path.dirname(__file__)),"phix174Test/ksweep_test.config")
+        self.testParser = ConfigParse(self.configPath)
+        self.pwd = os.path.dirname(os.path.abspath(__file__))
+
         self.sweep = "mer_size"
         self.sList = ['21', '23', '25', '27', '29',
                       '31', '33', '35', '37', '39',
@@ -48,8 +51,15 @@ class merParse_test_case(unittest.TestCase):
                                 self.sList,
                                 self.lnProcs)
 
-        self.correctly_parsed_ls1 = {"wildcard": "/mydir/fwd_data*.1.fastq.gz,/mydir/rev_data*.2.fastq.gz",
+        self.correctly_parsed_ls1 = {"wildcard": "reads/SRR353630_2500_1*.fastq.gz,reads/SRR353630_2500_2*.fastq.gz",
                             "name": "SP2013",
+                            "globs":[os.path.join(self.pwd, "phix174Test/reads/SRR353630_2500_1*.fastq.gz"),
+                                     os.path.join(self.pwd, "phix174Test/reads/SRR353630_2500_2*.fastq.gz")],
+                            "pairs":[(os.path.join(self.pwd, 'phix174Test/reads/SRR353630_2500_1.fastq.gz'),
+                                     os.path.join(self.pwd, 'phix174Test/reads/SRR353630_2500_2.fastq.gz')),
+
+                                     (os.path.join(self.pwd, 'phix174Test/reads/SRR353630_2500_1_2.fastq.gz'),
+                                     os.path.join(self.pwd, 'phix174Test/reads/SRR353630_2500_2_2.fastq.gz'))], 
                             "insertAvg": "720",
                             "insertSdev": "100" ,
                             "avgReadLn": "100",
@@ -61,8 +71,17 @@ class merParse_test_case(unittest.TestCase):
                             "5p_wiggleRoom": "0",
                             "3p_wiggleRoom": "0"}
 
-        self.correctly_parsed_ls2 = {"wildcard": "/mydir1*.fastq.gz,/mydir2*.fastq.gz",
+
+        self.correctly_parsed_ls2 = {"wildcard": "reads/SRR353630_2500_1*.fastq.gz,reads/SRR353630_2500_2*.fastq.gz",
                             "name": "SPAGET",
+                            "globs":[os.path.join(self.pwd, "phix174Test/reads/SRR353630_2500_1*.fastq.gz"),
+                                     os.path.join(self.pwd, "phix174Test/reads/SRR353630_2500_2*.fastq.gz")],
+                            "pairs":[(os.path.join(self.pwd, 'phix174Test/reads/SRR353630_2500_1.fastq.gz'),
+                                     os.path.join(self.pwd, 'phix174Test/reads/SRR353630_2500_2.fastq.gz')),
+
+                                     (os.path.join(self.pwd, 'phix174Test/reads/SRR353630_2500_1_2.fastq.gz'),
+                                     os.path.join(self.pwd, 'phix174Test/reads/SRR353630_2500_2_2.fastq.gz'))], 
+
                             "insertAvg": "555",
                             "insertSdev": "400" ,
                             "avgReadLn": "150",
@@ -73,14 +92,6 @@ class merParse_test_case(unittest.TestCase):
                             "useForGapClosing": "0",
                             "5p_wiggleRoom": "1",
                             "3p_wiggleRoom": "1"}
-
-    def test_libseq_parse(self):
-        """This tests if the libseq_parse() method correctly parses "lib_seq"
-        lines in the config files"""
-
-        line = "lib_seq /mydir/fwd_data*.1.fastq.gz,/mydir/rev_data*.2.fastq.gz SP2013 720 100 100 0 0 1 1 1 0 0"
-        parsed = self.myParse.libseq_parse(line)
-        self.assertEqual(parsed, self.correctly_parsed_ls1)
 
     def test_read_config(self):
         parsed_params = {"lib_seq": [self.correctly_parsed_ls1, self.correctly_parsed_ls2],
@@ -98,8 +109,9 @@ class merParse_test_case(unittest.TestCase):
                        "local_max_retries": 0}
         parsed_diploid_mode = {"bubble_depth_threshold": 0,
                              "strict_haplotypes": 1}
-        self.assertEqual(self.myParse.params, parsed_params)
-        self.assertEqual(self.myParse.diploid_mode, parsed_diploid_mode)
+        self.maxDiff = None
+        self.assertEqual(self.testParser.params, parsed_params)
+        self.assertEqual(self.testParser.diploid_mode, parsed_diploid_mode)
 
     def test_sweep_supported(self):
         """Checks to make sure that an error is raised if something that isn't
