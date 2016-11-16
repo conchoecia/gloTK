@@ -170,21 +170,27 @@ class MerRunAnalyzer:
         mercountHTML = os.path.join(
             os.path.basename(os.path.split(mercountToPath)[0]),
             os.path.basename(mercountToPath))
-        shutil.copyfile(mercountFromPath, mercountToPath)
-        print("![mercount]({0})".format(mercountHTML),
-            file=logfile)
-        print("", file=logfile)
-        print("#### `kha.png`", file = logfile)
-        print("", file=logfile)
+        if os.path.exists(mercountFromPath):
+            shutil.copyfile(mercountFromPath, mercountToPath)
+            print("![mercount]({0})".format(mercountHTML),
+                file=logfile)
+            print("", file=logfile)
+            print("#### `kha.png`", file = logfile)
+            print("", file=logfile)
+        else:
+            print("- couldn't find the mercount.png", file=logfile)
         khaFromPath = os.path.join(self.home, "meraculous_mercount/kha.png")
         khaToPath = os.path.join(self.reportDir, "kha.png")
         khaHTML = os.path.join(
             os.path.basename(os.path.split(khaToPath)[0]),
             os.path.basename(khaToPath))
-        shutil.copyfile(khaFromPath, khaToPath)
-        print("![kha]({0})".format(khaHTML),
-            file=logfile)
-        print("", file=logfile)
+        if os.path.exists(khaFromPath):
+            shutil.copyfile(khaFromPath, khaToPath)
+            print("![kha]({0})".format(khaHTML),
+                file=logfile)
+            print("", file=logfile)
+        else:
+            print("- couldn't find the kha.png plot", file=logfile)
 
         # 2. run fasta_stats on UUtig.fa
         # this is the result of the first contigs produced by meraculous_contigs

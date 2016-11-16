@@ -37,12 +37,14 @@ from collections import UserDict
 from numbers import Number
 from time import strftime as tfmt
 from string import ascii_letters, digits
+import copy
 import os
+import yaml
 
 class MerParse:
     """This class:
 
-    1. reads in an input file and extrapolates all of the possible
+    1. reads in an input file into ConfigParse and extrapolates all of the possible
        parameters for Meraculous
     2. Choose a parameter to sweep on and calculates the sweep intervals
     3. Output all of the config files to <$PWD>/mer_configs
@@ -56,49 +58,22 @@ class MerParse:
     Now the myPaths object contains a dict of run names and absolute paths for
         the config files.
     """
-    def __init__(self, inputFile, sweep, sList, lnProcs,
+    def __init__(self, inputFile, sweep=None, sList=None, lnProcs=0,
                  asPrefix = "as", asSI = 0, genus = None, species = None,
                  triplet=False):
         # ----------------- Run triplet assembly -------------------------------
         self.triplet = triplet
         # --------------- Config File Parameters -------------------------------
         self.inputFile = inputFile
-        self.params = {"lib_seq": [],
-                       "genome_size": -0.1,
-                       "mer_size": -1,
-                       "min_depth_cutoff": 0,
-                       "num_prefix_blocks": -1,
-                       "diploid_mode": 0,
-                       "use_cluster": 0,
-                       "no_read_validation": 0,
-                       "fallback_on_est_insert_size": 0,
-                       "gap_close_aggressive": 0,
-                       "gap_close_rpt_depth_ratio": 2.0,
-                       "local_num_procs": 1,
-                       "local_max_retries": 0}
-        self.diploid_mode = {"bubble_depth_threshold": 0,
-                             "strict_haplotypes": 1}
-        # makes two lists that contain which strings refer to things that should
-        #  be converted to ints vs floats
-        self.to_int = [x for x in self.params if isinstance(self.params[x], int)] + [
-            y for y in self.diploid_mode if isinstance(self.diploid_mode[y], int)]
-        self.to_float = [x for x in self.params if isinstance(self.params[x], float)] + [
-            y for y in self.diploid_mode if isinstance(self.diploid_mode[y], float)]
+        configFile = ConfigParse(inputFile)
+        self.params = configFile.params
+        self.diploid_mode = configFile.diploid_mode
+        # override the number of procs based on parallelism controlled in
+        #  gloTK/scripts/glotk_sweep.py
+        self.params["local_num_procs"] = lnProcs
 
-        # for debugging purposes, makes a list of values that were assigned a
-        #  negative value upon initialization, showing that they were not
-        #  specified in the config file and need to be changed. Raise an error
-        #  in the read_config file.
-        # self.config_specified are things that must be specified in the config
-        #  file, so if they are negative we know that the user made a mistake.
-        # self.config_unspecified are things that have a default value already,
-        #  so if they are negative then the user mis-entered something in the
-        # config file.
-        self.config_specified = [x for x in [u for u in self.params if isinstance(self.params[u], Number)] if self.params[x] < 0]
-        self.config_unspecified = [x for x in [u for u in self.params if isinstance(self.params[u], Number)] if self.params[x] >= 0] + [
-            y for y in [v for v in self.diploid_mode if isinstance(self.diploid_mode[v], Number)] if self.diploid_mode[y] >= 0]
 
-        # -------------------------Sweep Parameters-----------------------------
+       # -------------------------Sweep Parameters-----------------------------
         self.sweep = sweep
         self.sweep_support_int = ["mer_size", "bubble_depth_threshold"]
 
@@ -146,14 +121,9 @@ class MerParse:
         self.find_illegal_characters(genus, species)
         self.as_g = genus if genus else None
         self.as_s = species if species else None
-        # local number of processors (number of processors for one run)
-        self.lnProcs = lnProcs
 
         #-----------------------Directory Parameters----------------------------
-        self.cwd = os.getcwd()
-        #-----------------------Read the config file----------------------------
-        self.read_config()
-
+        self.cwd = os.getcwd() 
 
     def find_illegal_characters(self, genus, species):
         #only allow the user to input ASCII letters and digits (no punctuation)
@@ -217,11 +187,9 @@ class MerParse:
         if not os.path.exists(config_dir):
             os.makedirs(config_dir)
 
-        # 2. Assign assembly numbers to sweep param
-        print(self.sList)
+        # 2. Assign assembly numbers to sweep param 
         if self.triplet:
             self.sList = [k for sublist in [[x] * 3 for x in self.sList] for k in sublist]
-        print(self.sList)
 
         self.subParams = []
         diploid_counter = 0
@@ -261,7 +229,8 @@ class MerParse:
                 for key in self.params:
                     if key == "lib_seq":
                         for each in self.params["lib_seq"]:
-                            print("lib_seq {0}".format(each), file = f)
+                            #print(str(each))
+                            print("lib_seq {0}".format(str(each)), file = f)
                     else:
                         if key in assemParam:
                             print("{0} {1}".format(key, assemParam.get(key)),
@@ -274,6 +243,98 @@ class MerParse:
         # THIS IS THE FINAL FUNCTIONAL OUTPUT OF THIS CLASS.
         return {name:os.path.join(config_dir, "{0}.config".format(name))
                 for name in [subDict["assem_name"] for subDict in self.subParams]}
+
+class ConfigParse:
+    """This class is a Meraculous config file parser. It returns a params
+    dictionary that contains all the information for one Meraculous run"""
+
+    def __init__(self, inputFile):
+        self.inputFile = inputFile
+        if self.inputFile.endswith(".yaml"):
+            with open(self.inputFile,'r') as infile:
+                self.params = yaml.load(infile)
+        else:
+            self.params = {"lib_seq": [],
+                           "genome_size": -0.1,
+                           "mer_size": -1,
+                           "min_depth_cutoff": 0,
+                           "num_prefix_blocks": -1,
+                           "diploid_mode": 0,
+                           "use_cluster": 0,
+                           "no_read_validation": 0,
+                           "fallback_on_est_insert_size": 0,
+                           "gap_close_aggressive": 0,
+                           "gap_close_rpt_depth_ratio": 2.0,
+                           "local_num_procs": 1,
+                           "local_max_retries": 0}
+            self.diploid_mode = {"bubble_depth_threshold": 0,
+                                 "strict_haplotypes": 1}
+            # makes two lists that contain which strings refer to things that should
+            #  be converted to ints vs floats
+            self.to_int = [x for x in self.params if isinstance(self.params[x], int)] + [
+                y for y in self.diploid_mode if isinstance(self.diploid_mode[y], int)]
+            self.to_float = [x for x in self.params if isinstance(self.params[x], float)] + [
+                y for y in self.diploid_mode if isinstance(self.diploid_mode[y], float)]
+
+            # for debugging purposes, makes a list of values that were assigned a
+            #  negative value upon initialization, showing that they were not
+            #  specified in the config file and need to be changed. Raise an error
+            #  in the read_config file.
+            # self.config_specified are things that must be specified in the config
+            #  file, so if they are negative we know that the user made a mistake.
+            # self.config_unspecified are things that have a default value already,
+            #  so if they are negative then the user mis-entered something in the
+            # config file.
+            self.config_specified = [x for x in
+                                     [u for u in self.params
+                                      if isinstance(self.params[u], Number)]
+                                     if self.params[x] < 0]
+            self.config_unspecified = [x for x in
+                                       [u for u in self.params
+                                        if isinstance(self.params[u], Number)]
+                                       if self.params[x] >= 0] + [y for y in
+                                       [v for v in self.diploid_mode
+                                        if isinstance(self.diploid_mode[v], Number)]
+                                       if self.diploid_mode[y] >= 0]
+            self.read_config()
+
+    def space_error(self, line):
+        raise ValueError(
+            """ERROR: There are too many spaces in this line in your config
+            file: {0}""".format(line))
+
+    def save_yaml(self, outFile):
+        """saves the config parameters to a json file"""
+        with open(outFile,'w') as myfile:
+            print(yaml.dump(self.params), file=myfile)
+
+    def sym_reads_new_config(self, newDir, sym=False, mv=False):
+        """This moves the read files and renames the glob, outputs a new
+        ConfigParse object with updated values"""
+        newParams = copy.copy(self)
+        for i in range(0,len(self.params["lib_seq"])):
+            lib_seq = self.params["lib_seq"][i]
+            #update the glob
+            newParams.params["lib_seq"][i]["globs"] = [os.path.join(
+                newDir,os.path.basename(x)) for x in lib_seq["globs"]]
+            #now update the file paths and move/symlink if necessary
+            for j in range(0, len(lib_seq["pairs"])):
+                forward, reverse = lib_seq["pairs"][j]
+                new_forward = os.path.join(newDir, os.path.basename(forward))
+                new_reverse = os.path.join(newDir, os.path.basename(reverse))
+                #move or symlink the files
+                if sym:
+                    for each in [new_forward, new_reverse]:
+                        if os.path.exists(each):
+                            raise ValueError("""Attempted to make a symlink for
+                            a reads file, but it already exists. Chances are
+                            that you used the same reads for two lines in the
+                            Meraculous config file""")
+                    os.symlink(forward, new_forward)
+                    os.symlink(reverse, new_reverse)
+                #update the reads in the new config
+                newParams.params["lib_seq"][i]["pairs"][j] = [new_forward, new_reverse]
+        return newParams
 
     def assign(self, dict_name, key, value):
         """This assigns an input string to either a float or int and saves it in
@@ -288,27 +349,6 @@ class MerParse:
             its value to any dictionary in the merParse class""".format(
                 key, value))
 
-    def libseq_parse(self, line):
-        """This method parses a line containing a lib_seq string and adds it to
-        the lib_seq key in the self.params dictionary"""
-
-        LS = LibSeq()
-        line = line.split()
-        if (len(line) - 1) != 12:
-            raise ValueError("""ERROR: There are {0} values in the lib_seq line when
-                             there should only be 10. Check your input meraculous
-                             config file for errors and make sure that it matches
-                             the specification for the Meraculous manual.""".format(
-                                 len(line)))
-        for index in LS.values:
-            LS[LS.values.get(index)] = line[index]
-        return LS
-
-    def space_error(self, line):
-        raise ValueError(
-            """ERROR: There are too many spaces in this line in your config
-            file: {0}""".format(line))
-
     def read_config(self):
         with open(self.inputFile, "r") as f:
             for line in f:
@@ -322,7 +362,10 @@ class MerParse:
                         if param in self.params:
                             if param == "lib_seq":
                                 #add a libseq object to the libseq key in self.params
-                                self.params["lib_seq"].append(self.libseq_parse(line))
+                                LS = LibSeq(line, self.inputFile)
+                                #right here you need to pass the actual LS object
+                                # to take adavantage of its __repr__ method
+                                self.params["lib_seq"].append(LS)
                             else:
                                 if len(split) == 2:
                                     self.assign("params", param, val)
@@ -367,6 +410,3 @@ class MerParse:
                             number in the config file. Please use only positive
                             integers or positive floats in the config file and try
                             again.""".format(key))
-        # override the number of procs based on parallelism controlled in
-        #  gloTK/scripts/glotk_sweep.py
-        self.params["local_num_procs"] = self.lnProcs

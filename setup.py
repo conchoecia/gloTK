@@ -7,7 +7,7 @@
 from setuptools import setup
 
 setup(name='gloTK',
-      version="0.1.14",
+      version="0.1.15",
       description='Genomes of Luminous Organisms Toolkit',
       long_description="""
           GloTK is a toolkit for enhancing productivity in the process
@@ -44,7 +44,8 @@ setup(name='gloTK',
       tests_require=['nose'],
       entry_points = {
             'console_scripts': ['glotk-sweep=gloTK.scripts.glotk_sweep:main',
-                                'glotk-mitoshaper=gloTK.scripts.glotk_mitoshaper:main'],
+                                'glotk-mitoshaper=gloTK.scripts.glotk_mitoshaper:main',
+                                'glotk-project=gloTK.scripts.glotk_project:main'],
         },
       zip_safe=False,
       include_package_data=True)

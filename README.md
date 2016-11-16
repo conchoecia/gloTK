@@ -43,6 +43,69 @@ autocomplete and you will see a few options:
 
 ## News
 
+
+### _*v0.1.15*_ - 20161116
+
+
+* This version incorporates glotk-project. This script reads in a config file
+  and generates a 'glotk_project' directory in which information about the
+  libraries, assemblies, et cetera for this Meraculous genome project is stored. 
+  Assemblies, reports, config files, et cetera  will take place in
+  adjacent directories
+* gloTK project files will now take on the following file structure:
+
+```
+project_dir/
+|--glotk_info/
+|  |  default_config.config
+|  |  sample_metadata.config
+|  |  read_metadata.config
+|  |  assemblynumber_to_runname.txt
+|  |
+|  |--activity_log/
+|  |     as000.log
+|  |     as001.log
+|  |     etcetera.log
+|  |
+|  |--read_configs/
+|        reads0.yaml #this is the initial yaml file for imported reads
+|        reads1.yaml #reads generated from Seqprep, trimmomatic, et cetera
+|
+|--glotk_assemblies
+|  |--as000_<assembly_name>/
+|  |  |--assembler_output/
+|  |
+|  |--as001_20161102_ME_pleu_bach_k63_d1/
+|     |--meraculous_etcetera
+|
+|--glotk_configs
+|     as000_<assembly_name>.config
+|     as001_20161102_ME_pleu_bach_k63_d1.config
+|
+|--glotk_reads
+|  |  reads.log
+|  |
+|  |--reads0/
+|  |     <forward_reads_symlink>.fq.gz
+|  |     <reverse_reads_symlink>.fq.gz
+|  |
+|  |--reads1/
+|        <processed_forward>.fq.gz
+|        <processed_reverse>.fq.gz
+|
+|--glotk_fastqc
+|--glotk_kmers
+|--glotk_reports
+```
+
+
+### _*v0.1.14*_ - 20161102
+
+
+* Gave a --triplet flag to glotk-sweep to cause the assembler to run diploid modes
+  0, 1, and 2 on the same kmer size.
+
+
 ### _*v0.1.13*_ - 20161102
 
 * Made glotk-sweep function by inputting each value of k to assemble for, rather
