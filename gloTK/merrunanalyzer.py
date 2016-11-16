@@ -49,8 +49,11 @@ class MerRunAnalyzer:
 
         #setup the bit to cleanly censor the files
         self.home.strip().rsplit("/")
-        censor = [x for x in self.parent.strip().rsplit("/") if x]
-        self.censor = {strip: "" for strip in censor}
+        fileCensor = []
+        if censor:
+            fileCensor = [x for x in self.parent.strip().rsplit("/") if x]
+        fileCensor = fileCensor + censor
+        self.censor = {strip: "" for strip in fileCensor}
         self.rep = dict((re.escape(k), v) for k, v in self.censor.items())
         self.pattern = re.compile("|".join(self.rep.keys()))
 
@@ -126,7 +129,10 @@ class MerRunAnalyzer:
         Input: text string to strip based on instance attribute self.censor
         Output: a stripped (censored) text string
         """
-        return self.pattern.sub(lambda m: self.rep[re.escape(m.group(0))], text)
+        if self.rep:
+            return self.pattern.sub(lambda m: self.rep[re.escape(m.group(0))], text)
+        else:
+            return text
 
     def generate_report(self):
         """This method does most of the work for this class. It generates an

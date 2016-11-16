@@ -187,7 +187,7 @@ class MerParse:
         if not os.path.exists(config_dir):
             os.makedirs(config_dir)
 
-        # 2. Assign assembly numbers to sweep param 
+        # 2. Assign assembly numbers to sweep param
         if self.triplet:
             self.sList = [k for sublist in [[x] * 3 for x in self.sList] for k in sublist]
 
@@ -195,6 +195,7 @@ class MerParse:
         diploid_counter = 0
         asNumCounter = self.as_i
         for kmer in self.sList:
+            #subPDict is a dictionary of parameters for one run
             subPDict = {}
             #set mer_size
             if self.sweep == "mer_size":
@@ -214,7 +215,7 @@ class MerParse:
                                                    subPDict.get("diploid_mode"))
             self.subParams.append(subPDict)
             #keep track of the diploid modes to use in case of self.triplet
-            if diploid_counter == 3:
+            if diploid_counter == 2:
                 diploid_counter = 0
             else:
                 diploid_counter += 1
