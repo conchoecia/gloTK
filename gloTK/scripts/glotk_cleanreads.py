@@ -230,6 +230,25 @@ def main():
                             "gloTK_info/read_configs/reads{}.yaml".format(
                                 options.outNum)))
 
+    # run fastqc on all of the files
+    #set the outdir for the fastqc files and make that dir
+    fastqcOutDir = os.path.join(options.gloTKDir,
+                                "glotk_fastqc/reads{}".format(options.outNum))
+    #fastqc doesn't make the directory if it doesn't exist
+    gloTK.utils.safe_mkdir(fastqcOutDir)
+    #turn the read list into a string
+    readlist = newYaml.all_reads()
+    print("readlist: ", readlist)
+    #determine threads to use
+    threadpoolsize = len(readlist)
+    if cpu_count() < threadpoolsize:
+        threadpoolsize = cpu_count()
+    #run fastqc on all the reads
+    args = {"readlist": readlist,
+            "outdir": fastqcOutDir,
+            "threads": threadpoolsize}
+    thisInstance = gloTK.wrappers.Fastqc(**args)
+
 def seqProcess_run_helper(instance):
     """This method is a helper method for class MerRunner. It allows
     multiprocessing module in python to map parallelism to a class method."""

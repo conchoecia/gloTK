@@ -320,3 +320,17 @@ class Seqtk(BaseWrapper):
                      kwargs["inputPath"],
                      kwargs["readCount"]]
         self.run()
+
+class Fastqc(BaseWrapper):
+    """Runs FastQC on several files at once.
+    Important options to pass are:
+      -o --outdir (all output files placed here)
+      -t --threads (how many files to process at once)
+    """
+    def __init__(self, **kwargs):
+        self.init('fastqc', **kwargs)
+        self.args = ["fastqc",
+               " ".join(kwargs.get("readlist")),
+               "-o", kwargs.get("outdir"),
+               "-t", kwargs.get("threads")]
+        self.run()

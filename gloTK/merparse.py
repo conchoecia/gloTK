@@ -311,6 +311,16 @@ class ConfigParse:
         with open(outFile,'w') as myfile:
             print(yaml.dump(self.params), file=myfile)
 
+    def all_reads(self):
+        """outputs a list of all the reads files in this ConfigParse object"""
+        fileList = []
+        for lib_seq in self.params["lib_seq"]:
+            for pair in lib_seq["pairs"]:
+                for read in pair:
+                    print("read: ", read)
+                    fileList.append(read)
+        return fileList
+
     def sym_reads_new_config(self, newDir, sym=False, mv=False):
         """This moves the read files and renames the glob, outputs a new
         ConfigParse object with updated values"""
