@@ -89,9 +89,8 @@ class BaseWrapper:
         self.return_ok = kwargs.get('return_ok', 0)
         self.cwd = kwargs.get('cwd', os.getcwd())
         self.stdout = kwargs.get('stdout')
-        self.outdir = kwargs.get('outDir')
+        self.outdir = kwargs.get('outdir')
         self.gzip = kwargs.get('gzip', None)
-        print("init")
         self.stdout_append = kwargs.get('stdout_append')
         self.pipe = kwargs.get('pipe')
         self.env = os.environ.copy()
@@ -228,7 +227,7 @@ class Seqprep (BaseWrapper):
       reversePath    <second read input fastq filepath>
       forwardOutFile <first read output fastq filename>
       reverseOutFile <second read output fastq filename>
-      outDir         <directory where files will be saved
+      outdir         <directory where files will be saved
 
     Arguments for Adapter/Primer Trimming (Optional):
       qualCutoff     <Quality score cutoff for mismatches to be counted in
@@ -261,12 +260,14 @@ class Seqprep (BaseWrapper):
                        default = "AGATCGGAAGAGCGTCGTGT">
     """
     def __init__(self, **kwargs):
-        self.init('seqprep2', **kwargs)
+        self.init('SeqPrep2', **kwargs)
         for each in kwargs:
             if "Path" in each:
                 kwargs[each] = self.check_path(kwargs[each])
-            if "File" in each:
-                kwargs[each] = os.path.join(kwargs["outDir"], kwargs[each])
+            # #originally this code was designed to fix the outname, but this is
+            # # handled in the parser for cleansequences
+            # if "File" in each:
+            #     kwargs[each] = os.path.join(kwargs["outdir"], kwargs[each])
 
         self.args = ["SeqPrep2",
                 "-f", kwargs["forwardPath"],
@@ -287,14 +288,13 @@ class Seqprep (BaseWrapper):
                           "-x", kwargs.get("prettyNum", 50),
                           "-o", kwargs.get("overlapMin", 30)]
 
-        self.run()
-
+            #Does not use self.run() so that this process can be parallelized
 
 class Seqtk(BaseWrapper):
     """
     Required Arguments:
       inputPath
-      outDir
+      outdir
       readCount
 
     Optional Arguments:
@@ -304,8 +304,7 @@ class Seqtk(BaseWrapper):
         """Run seqtk to sample the reads and return output if there is any"""
         self.init('seqtk', **kwargs)
 
-        print("instance")
-        self.gzip = os.path.join(kwargs["outDir"],
+        self.gzip = os.path.join(kwargs["outdir"],
             "{}_{}reads.fastq.gz".format(
                 utils.fastx_basename(kwargs["inputPath"]),
                 kwargs["readCount"]) )

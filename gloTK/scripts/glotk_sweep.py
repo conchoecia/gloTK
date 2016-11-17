@@ -76,7 +76,8 @@ class CommandLine:
           - species
         """
 
-        self.parser=argparse.ArgumentParser(description=__doc__)
+        self.parser=argparse.ArgumentParser(description=__doc__,
+                                                    formatter_class=argparse.RawDescriptionHelpFormatter)
         self.parser.add_argument("-i", "--inputConfig",
                             type=str,
                             action=FullPaths,

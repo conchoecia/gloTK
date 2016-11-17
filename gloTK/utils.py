@@ -36,6 +36,7 @@ from Bio import SeqIO
 from Bio.SeqUtils import GC
 from collections import Counter
 from traceback import print_stack
+from gloTK import ConfigParse
 
 
 def gzip_verify(filepath):
@@ -91,6 +92,21 @@ def dir_is_glotk(path):
         return True
     else:
         return False
+
+def reads_and_yaml_exist(gloTKDir, readNum):
+    """check that a yaml file and its corresponding reads exist.
+    Returns a tuple of (boolean, 'return message') """
+    yamlFile = os.path.join(gloTKDir, "gloTK_info/read_configs/reads{}.yaml".format(readNum))
+    #if the yaml file doesn't exist, then it is false that reads and yaml exist
+    if not os.path.exists(yamlFile):
+        return (False, "The yaml file for reads{} does not exist.".format(yamlFile))
+    thisYaml = ConfigParse(yamlFile)
+    for libseq in thisYaml.params["lib_seq"]:
+        for pair in libseq["pairs"]:
+            for read in pair:
+                if not os.path.exists(read):
+                    return(False, "The read file {} does not exist".format(read))
+    return (True, "Both yaml file and corresponding reads exist.")
 
 def timestamp():
     """

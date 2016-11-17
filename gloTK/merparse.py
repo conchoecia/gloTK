@@ -247,7 +247,9 @@ class MerParse:
 
 class ConfigParse:
     """This class is a Meraculous config file parser. It returns a params
-    dictionary that contains all the information for one Meraculous run"""
+    dictionary that contains all the information for one Meraculous run.
+
+    Input is a meraculous config file or a yaml file of a ConfigParse Object"""
 
     def __init__(self, inputFile):
         self.inputFile = inputFile
