@@ -1,0 +1,3 @@
+- 20161117
+  - Make the species/genus meta info wrap in more tightly with glotk-sweep
+  - Fix the problem of not having a Java/Jar that is system-specific

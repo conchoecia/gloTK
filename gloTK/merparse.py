@@ -251,7 +251,7 @@ class ConfigParse:
 
     Input is a meraculous config file or a yaml file of a ConfigParse Object"""
 
-    def __init__(self, inputFile):
+    def __init__(self, inputFile, genus = None, species = None):
         self.inputFile = inputFile
         if self.inputFile.endswith(".yaml"):
             with open(self.inputFile,'r') as infile:
@@ -269,7 +269,8 @@ class ConfigParse:
                            "gap_close_aggressive": 0,
                            "gap_close_rpt_depth_ratio": 2.0,
                            "local_num_procs": 1,
-                           "local_max_retries": 0}
+                           "local_max_retries": 0
+                           }
             self.diploid_mode = {"bubble_depth_threshold": 0,
                                  "strict_haplotypes": 1}
             # makes two lists that contain which strings refer to things that should
@@ -317,7 +318,6 @@ class ConfigParse:
         for lib_seq in self.params["lib_seq"]:
             for pair in lib_seq["pairs"]:
                 for read in pair:
-                    print("read: ", read)
                     fileList.append(read)
         return fileList
 

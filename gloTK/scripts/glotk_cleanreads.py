@@ -63,7 +63,6 @@ from multiprocessing.dummy import Pool as ThreadPool
 
 #import gloTK stuff
 from gloTK import ConfigParse
-
 import gloTK.utils
 import gloTK.wrappers
 
@@ -138,12 +137,41 @@ class CommandLine:
                               type = str, default = "AGATCGGAAGAGCGTCGTGT",
                               help = """second read primer rejection sequence;
                               default = AGATCGGAAGAGCGTCGTGT""")
+        TMParser = subparsers.add_parser("trimmomaticSE", help='trimmomatic help')
+        # TMParser.add_argument("--ILLUMINACLIP",
+        #                       help = """cut adapter and other illumina-specific
+        #                       seqs.""")
+        TMParser.add_argument("--SLIDINGWINDOW",
+                              help = """perform a sliding window trimming, cutting
+                              once the avg quality within the window falls below a
+                              threshold.""")
+        TMParser.add_argument("--LEADING",
+                              help = """cut bases off the start of a read,
+                              if below a threshold quality""")
+        TMParser.add_argument("--TRAILING",
+                              help = """cut bases off the end of a read, if below
+                              a threshold quality""")
+        TMParser.add_argument("--CROP",
+                              help = """cut the read to a specified length""")
+        TMParser.add_argument("--HEADCROP",
+                              help = """cut the specified number of bases from the
+                              start of the read""")
+        TMParser.add_argument("--MINLEN",
+                              help = """drop the read if it is below a specified
+                              length""")
+        TMParser.add_argument("--jarPath",
+                              type = str,
+                              required = True,
+                              help = """input the path to the Trimmomatic jar
+                              file""")
+
+
 
 
     def parse(self):
         self.args = self.parser.parse_args()
         # Verify that you have selected a valid option for readcleaner
-        cleanreadsOptions = ["SeqPrep2"]
+        cleanreadsOptions = ["SeqPrep2", "trimmomaticSE"]
           # The operation is the first item in the string, like SeqPrep2 or Trimmomatic
         selectedOperation = self.args.operation
           # The operation options are what to pass to the operation
@@ -168,7 +196,6 @@ def main():
     parser.parse()
     options = parser.args
     print(options)
-
 
     # Verify that the reads that you have chosen exist
     exists = gloTK.utils.reads_and_yaml_exist(options.gloTKDir, options.readsNum)
@@ -209,6 +236,17 @@ def main():
                 #The ** turns it into kwargs http://stackoverflow.com/questions/1559638/
                 thisInstance = gloTK.wrappers.Seqprep(**pairArgs)
                 instances.append(thisInstance)
+            if options.operation == "trimmomaticSE":
+                #there are two instances to append here since the software
+                # only operates on one pair at a time
+                pairArgs["input"] = pairArgs["forwardPath"]
+                pairArgs["output"] = pairArgs["forwardOutFile"]
+                thisInstance = gloTK.wrappers.TrimmomaticSE(**pairArgs)
+                instances.append(thisInstance)
+                pairArgs["input"] = pairArgs["reversePath"]
+                pairArgs["output"] = pairArgs["reverseOutFile"]
+                thisInstance = gloTK.wrappers.TrimmomaticSE(**pairArgs)
+                instances.append(thisInstance)
 
     #process the reads
     print("Using {} processors.".format(len(instances)))
@@ -233,7 +271,7 @@ def main():
     # run fastqc on all of the files
     #set the outdir for the fastqc files and make that dir
     fastqcOutDir = os.path.join(options.gloTKDir,
-                                "glotk_fastqc/reads{}".format(options.outNum))
+                                "gloTK_fastqc/reads{}".format(options.outNum))
     #fastqc doesn't make the directory if it doesn't exist
     gloTK.utils.safe_mkdir(fastqcOutDir)
     #turn the read list into a string
@@ -247,7 +285,7 @@ def main():
     args = {"readlist": readlist,
             "outdir": fastqcOutDir,
             "threads": threadpoolsize}
-    thisInstance = gloTK.wrappers.Fastqc(**args)
+    gloTK.wrappers.Fastqc(**args)
 
 def seqProcess_run_helper(instance):
     """This method is a helper method for class MerRunner. It allows

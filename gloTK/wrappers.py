@@ -34,6 +34,7 @@ import time
 #from itertools import chain
 
 from gloTK import utils
+from gloTK.utils import fastq_append as fa
 
 
 #started 4:15PM
@@ -334,3 +335,78 @@ class Fastqc(BaseWrapper):
                "-o", kwargs.get("outdir"),
                "-t", kwargs.get("threads")]
         self.run()
+
+class Kmergenie(BaseWrapper):
+    """Runs kmergenie on a single file at a time.
+    Outputs files in the same directory in which it is run.
+    Important options to pass are:
+     -k <value>   largest k-mer size to consider (default: 121)
+     -l <value>   smallest k-mer size to consider (default: 15)
+     -s <value>   interval between consecutive kmer sizes (default: 10)
+     -e <value>   k-mer sampling value (default: auto-detected to use ~200 MB memory/thread)
+     -t <value>   number of threads (default: number of cores minus one)
+     -o <prefix>  prefix of the output files (default: histograms)
+     --debug      developer output of R scripts
+    """
+    def __init__(self, **kwargs):
+        self.init('kmergenie', **kwargs)
+        self.args = ["kmergenie",
+                     kwargs.get("readFile"),
+                     "-o", kwargs.get("prefix"),
+                     "-t", kwargs.get("threads")]
+        self.run()
+
+class TrimmomaticSE(BaseWrapper):
+    """Input for trimmomatic is as follows:
+    java -jar trimmomatic-0.35.jar SE \
+     input.fq.gz output.fq.gz \
+     ILLUMINACLIP:TruSeq3-SE:2:30:10 \
+     LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
+ 
+    Options are as follows:
+      ILLUMINACLIP:  - cut adapter and other illumina-specific seqs.
+      SLIDINGWINDOW: - perform a sliding window trimming, cutting once the
+                        avg quality within the window falls below a threshold.
+      LEADING:       - cut bases off the start of a read, if below
+                        a threshold quality
+      TRAILING:      - cut bases off the end of a read, if below a
+                        threshold quality
+      CROP:          - cut the read to a specified length
+      HEADCROP:      - cut the specified number of bases from the
+                        start of the read
+      MINLEN:        - drop the read if it is below a specified length
+    """
+    def __init__(self, **kwargs):
+        self.init('trimmomaticSE', **kwargs)
+        self.args = ["/usr/bin/java", '-jar', kwargs.get("jarPath"), "SE",
+                kwargs["input"], kwargs["output"]]
+        optionals = ["ILLUMINACLIP", "LEADING", "TRAILING", "SLIDINGWINDOW",
+                     "CROP", "HEADCROP", "MINLEN"]
+        for option in optionals:
+            if kwargs.get(option):
+                self.args.append("{}:{}".format(option, kwargs[option]))
+        self.run()
+
+# class TrimmomaticPE(BaseWrapper):
+#     """Input for trimmomatic is as follows:
+#        java -jar trimmomatic-0.35.jar PE -phred33 \
+#          input_forward.fq.gz input_reverse.fq.gz \
+#          output_forward_paired.fq.gz output_forward_unpaired.fq.gz \
+#          output_reverse_paired.fq.gz output_reverse_unpaired.fq.gz \
+#          ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 \
+#          LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
+#     """
+#     def __init_(self, **kwargs):
+#         self.init('kmergenie', **kwargs)
+#         self.args = [kwargs.get("jarPath"), "PE", "-phred33",
+#                 kwargs["forwardPath"], kwargs["reversePath"],
+#                 kwargs["forwardOutFilePaired"], kwargs["forwardOutFileUnpaired"],
+#                 kwargs["reverseOutFilePaired"], kwargs["reverseOutFileUnpaired"]]
+#         optionals = ["ILLUMINACLIP", "LEADING", "TRAILING", "SLIDINGWINDOW"]
+#                 kwargs.get("qualCutoff", 13),
+#                 kwargs.get("lenCutoff", 30),
+#                 kwargs.get("forAdapter", "AGATCGGAAGAGCACACGTC"),
+#                 kwargs.get("revAdapter", "AGATCGGAAGAGCGTCGTGT"),
+#                 kwargs.get("editReject", 1),
+#                 kwargs.get("forwardReject", "AGATCGGAAGAGCACACGTC"),
+#                 kwargs.get("reverseReject", "AGATCGGAAGAGCGTCGTGT")]
