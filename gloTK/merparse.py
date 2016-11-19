@@ -38,6 +38,7 @@ from numbers import Number
 from time import strftime as tfmt
 from string import ascii_letters, digits
 import copy
+import inspect
 import os
 import yaml
 
@@ -53,21 +54,25 @@ class MerParse:
 
     Useage example:
     myMerParser = MerParse(<params>)
-    myPaths = myMerParser.sweeper_output()
+    mySubparams = myMerParser.sweeper_output()
+    myPaths = myMerParser.save_configs()
+
 
     Now the myPaths object contains a dict of run names and absolute paths for
         the config files.
     """
     def __init__(self, inputFile, sweep=None, sList=None, lnProcs=0,
                  asPrefix = "as", asSI = 0, genus = None, species = None,
-                 triplet=False):
+                 triplet=False, diploidMode = None):
         # ----------------- Run triplet assembly -------------------------------
         self.triplet = triplet
         # --------------- Config File Parameters -------------------------------
         self.inputFile = inputFile
         configFile = ConfigParse(inputFile)
         self.params = configFile.params
-        self.diploid_mode = configFile.diploid_mode
+        #this conditional is used for test_MerParse.py
+        if diploidMode != None:
+            self.params["diploid_mode"] = diploidMode
         # override the number of procs based on parallelism controlled in
         #  gloTK/scripts/glotk_sweep.py
         self.params["local_num_procs"] = lnProcs
@@ -170,22 +175,12 @@ class MerParse:
         20160811:
           - g = "Malacosteus"
           - s = "niger"
-
-        The assembly directory will be saved in the current working
-        directory as:
-          - configs/as000_20160811_ME_mala_nige_k21_p0
-
         Steps for this method:
-        1. Check if configs is a directory that exists, if not, make it.
         2. For loop
           - Assign assembly numbers to sweep param
           - Output config file for each sweep param
-        3. return dict of {"<run string>": "<config abs path>"}
+
         """
-        # 1. check if configs directory exists, if not, make it
-        config_dir = os.path.join(os.getcwd(), "configs")
-        if not os.path.exists(config_dir):
-            os.makedirs(config_dir)
 
         # 2. Assign assembly numbers to sweep param
         if self.triplet:
@@ -221,6 +216,23 @@ class MerParse:
                 diploid_counter += 1
             #increment the assembly number counter
             asNumCounter += 1
+        return self.subParams
+
+    def save_configs(self):
+        """
+        The assembly directory will be saved in the current working
+        directory as:
+          - configs/as000_20160811_ME_mala_nige_k21_p0
+        Steps for this method:
+        1. Check if configs is a directory that exists, if not, make it.
+        2. Save the config files to the directory
+        3. return dict of {"<run string>": "<config abs path>"}
+        """
+
+        # 1. check if configs directory exists, if not, make it
+        config_dir = os.path.join(os.getcwd(), "configs")
+        if not os.path.exists(config_dir):
+            os.makedirs(config_dir)
 
         #This block actually saves the config files
         for assemParam in self.subParams:
@@ -230,7 +242,6 @@ class MerParse:
                 for key in self.params:
                     if key == "lib_seq":
                         for each in self.params["lib_seq"]:
-                            #print(str(each))
                             print("lib_seq {0}".format(str(each)), file = f)
                     else:
                         if key in assemParam:
@@ -253,6 +264,9 @@ class ConfigParse:
 
     def __init__(self, inputFile, genus = None, species = None):
         self.inputFile = inputFile
+        self.diploid_mode = {"bubble_depth_threshold": 0,
+                                 "strict_haplotypes": 1}
+
         if self.inputFile.endswith(".yaml"):
             with open(self.inputFile,'r') as infile:
                 self.params = yaml.load(infile)
@@ -271,8 +285,6 @@ class ConfigParse:
                            "local_num_procs": 1,
                            "local_max_retries": 0
                            }
-            self.diploid_mode = {"bubble_depth_threshold": 0,
-                                 "strict_haplotypes": 1}
             # makes two lists that contain which strings refer to things that should
             #  be converted to ints vs floats
             self.to_int = [x for x in self.params if isinstance(self.params[x], int)] + [

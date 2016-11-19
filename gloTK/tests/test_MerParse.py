@@ -189,6 +189,76 @@ class merParse_test_case(unittest.TestCase):
                                 genus = self.genus, asSI=5)
         self.assertEqual(myParseShouldEqual, self.myParse2.name_gen(15, k, 0))
 
+    def test_sweep_order_correct_triplet(self):
+        """Verifies correctly assigns numbers and modes. With triplet."""
+        # myParse3 example
+        #   - init params were:
+        #     - asPrefix = "xy"
+        #     - genus = mnem
+        #     - species = leid
+        #     - assembly selected i = 8
+        #     - k = 57, 63, 89
+        #     - d = 0
+        #     -triplet = True
+        as_d = tfmt("%Y%m%d")
+        # names of assemblies should be, in order
+        targetNames = [x.replace("{}", as_d) for x in
+                       ["xy005_{}_ME_mnem_leid_k57_d0",
+                        "xy006_{}_ME_mnem_leid_k57_d1",
+                        "xy007_{}_ME_mnem_leid_k57_d2",
+
+                        "xy008_{}_ME_mnem_leid_k63_d0",
+                        "xy009_{}_ME_mnem_leid_k63_d1",
+                        "xy010_{}_ME_mnem_leid_k63_d2",
+
+                        "xy011_{}_ME_mnem_leid_k89_d0",
+                        "xy012_{}_ME_mnem_leid_k89_d1",
+                        "xy013_{}_ME_mnem_leid_k89_d2"]]
+        self.myParse4 = MerParse(self.configPath,
+                                 sweep = self.sweep,
+                                 sList = ['57', '63', '89'],
+                                 lnProcs = self.lnProcs,
+                                 asPrefix = "xy",
+                                 genus = "mnem",
+                                 species = "leid",
+                                 diploidMode=0,
+                                 asSI=5,
+                                 triplet=True)
+        subParams = self.myParse4.sweeper_output()
+        print(subParams)
+        results = [x["assem_name"] for x in subParams]
+        self.assertEqual(targetNames,results)
+
+    def test_sweep_order_correct_no_triplet(self):
+        """Verifies correctly assigns numbers and modes. No triplet."""
+        # myParse3 example
+        #   - init params were:
+        #     - asPrefix = "xy"
+        #     - genus = mnem
+        #     - species = leid
+        #     - assembly selected i = 8
+        #     - k = 57, 63, 89
+        #     - d = 0
+        as_d = tfmt("%Y%m%d")
+        # names of assemblies should be, in order
+        targetNames = [x.replace("{}", as_d) for x in
+                       ["xy005_{}_ME_mnem_leid_k57_d0",
+                        "xy006_{}_ME_mnem_leid_k63_d0",
+                        "xy007_{}_ME_mnem_leid_k89_d0"]]
+        self.myParse3 = MerParse(self.configPath,
+                                 sweep = self.sweep,
+                                 sList = ['57', '63', '89'],
+                                 lnProcs = self.lnProcs,
+                                 asPrefix = "xy",
+                                 genus = "mnem",
+                                 species = "leid",
+                                 diploidMode=0,
+                                 asSI=5)
+        subParams = self.myParse3.sweeper_output()
+        results = [x["assem_name"] for x in subParams]
+        self.assertEqual(targetNames,results)
+
+
     def test_name_gen_noGenus(self):
         """This tests that the myParse.name_gen() method works when the
         genus is not defined. The output should just have an omitted
