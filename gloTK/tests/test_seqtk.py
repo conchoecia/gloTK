@@ -45,7 +45,7 @@ class seqtk_test_case(unittest.TestCase):
         sampled = Seqtk(seed = 100,
                         inputPath = self.inputPath,
                         readCount = 2,
-                        outDir = self.readPath)
+                        outdir = self.readPath)
 
         linecount = 0
         with gzip.open(self.outpath, 'rb') as f:

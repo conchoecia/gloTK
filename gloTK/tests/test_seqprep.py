@@ -44,7 +44,7 @@ class seqprep_test_case(unittest.TestCase):
                            os.path.join(self.readPath, self.reverseOutFile),
                            os.path.join(self.readPath, self.mergedOutFile),
                            os.path.join(self.readPath, self.prettyOutFile),
-                           os.path.join(self.readPath, "seqprep2.log")]
+                           os.path.join(self.readPath, "SeqPrep2.log")]
 
     def test_unmerged(self):
         """This method tests that Seqprep is correctly processing both merged and unmerged data.
@@ -56,7 +56,8 @@ class seqprep_test_case(unittest.TestCase):
                        reverseOutFile = self.reverseOutFile,
                        mergedOutFile  = self.mergedOutFile,
                        prettyOutFile  = self.prettyOutFile,
-                       outDir         = self.readPath)
+                       outdir         = self.readPath)
+        prep.run()
         for path in self.nameVector:
             self.assertTrue(os.path.exists(path))
             if "SRR" not in path:
