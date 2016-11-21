@@ -29,7 +29,7 @@ This program:
    multiprocessing core that controls which assemblies are executed and when.
 3. Each assembly is executed.
 
-Usage: 
+Usage:
 "--slist 21 23 57 73" to perform assemblies for kmer sizes 21, 23, 57, 73, et cetera
 """
 
@@ -50,6 +50,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 #import gloTK stuff
 from gloTK import MerParse
 from gloTK import MerRunAnalyzer
+import gloTK.utils
 
 #This class is used in argparse to expand the ~. This avoids errors caused on
 # some systems.
@@ -61,10 +62,8 @@ class FullPaths(argparse.Action):
 
 class CommandLine:
     """
-    authors: Darrin Schultz
     Handle the command line, usage and help requests.
     """
-
     def __init__(self) :
         """For stage 1, the necessary arguments for the MerParse class are:
           - inputFile
@@ -77,13 +76,17 @@ class CommandLine:
         """
 
         self.parser=argparse.ArgumentParser(description=__doc__,
-                                                    formatter_class=argparse.RawDescriptionHelpFormatter)
-        self.parser.add_argument("-i", "--inputConfig",
+                            formatter_class=argparse.RawDescriptionHelpFormatter)
+        group = self.parser.add_mutually_exclusive_group(required=True)
+        group.add_argument("-i", "--inputConfig",
                             type=str,
                             action=FullPaths,
-                            required=True,
-                            help="""The meraculous config file upon which the
-                            sweep will be based.""")
+                            help="""Uses a meraculous config file upon which to
+                            base the following runs""")
+        group.add_argument("-r", "--readsNum",
+                            type = int,
+                            help = """Bases the assembly on a yaml file for
+                            reads that exist in this gloTK project directory.""")
         self.parser.add_argument("-s", "--sweep",
                             type=str,
                             choices=["mer_size", "bubble_depth_threshold"],
@@ -140,7 +143,25 @@ class CommandLine:
 
     def parse(self):
         self.args = self.parser.parse_args()
+        # Verify that we are in a gloTK directory
+        setattr(self.args, "gloTKDir", os.getcwd())
+        if not gloTK.utils.dir_is_glotk(self.args.gloTKDir):
+            raise ValueError("""This is not a gloTK directory. Please initialize
+            this directory with glotk-project.""")
+        # 1. Reads in a meraculous config file and outputs all of the associated config
+        #    files to $PWD/configs
+
+        if self.args.inputConfig:
+            setattr(self.args, "inputSource", self.args.inputConfig)
+        elif self.args.readsNum != None:
+            yamlPath = os.path.join(self.args.gloTKDir,
+                                "gloTK_info/read_configs/reads{}.yaml".format(
+                                    self.args.readsNum))
+            setattr(self.args, "inputSource", yamlPath)
         print(self.args)
+        if not os.path.exists(self.args.inputSource):
+            raise IOError ("""You have selected an input source that does not
+            exist: {}""".format(self.args.inputSource))
 
 def mer_runner_dummy(instance):
     """This method is a helper method for class MerRunner. It allows
@@ -150,15 +171,15 @@ def mer_runner_dummy(instance):
 class MerRunner:
     """This class has one instance per Meraculous run and is accessed with the
     partial module"""
-    def __init__(self, runName, configPath, cleanup):
+    def __init__(self, runName, configPath, cleanup, gloTKDir):
         """The cleanup parameter is what is passed to the run_meraculous script"""
         self.runName = runName
         self.configPath = configPath
         self.cleanup =  cleanup
-        self.cwd = os.path.abspath(os.getcwd())
-        self.allAssembliesDir = os.path.join(self.cwd, "assemblies")
+        self.gloTKDir = gloTKDir
+        self.allAssembliesDir = os.path.join(self.gloTKDir, "gloTK_assemblies")
         self.thisAssemblyDir = os.path.join(self.allAssembliesDir, self.runName)
-        self.reportsDir = os.path.join(self.cwd, "reports")
+        self.reportsDir = os.path.join(self.gloTKDir, "gloTK_reports")
 
         self.callString = "run_meraculous.sh -c {0} -dir {1} -cleanup_level {2}".format(
             self.configPath, self.runName, self.cleanup)
@@ -192,7 +213,7 @@ class MerRunner:
         return (output, err)
 
     def _generate_report(self):
-        reporter = MerRunAnalyzer(self.thisAssemblyDir, self.cwd, [])
+        reporter = MerRunAnalyzer(self.thisAssemblyDir, self.gloTKDir, [])
         reporter.generate_report()
 
 def main():
@@ -210,6 +231,7 @@ def main():
         sys.exit(1)
     parser.parse()
     myArgs = parser.args
+    print(myArgs)
 
     #Figure out how many processors to give to each assembly since we will be
     # running some things in parallel. The MerParse class will handle overriding
@@ -217,23 +239,23 @@ def main():
     procsPerAssembly = min(50, int(myArgs.maxProcs / myArgs.simultaneous))
     setattr(myArgs, "maxProcs", procsPerAssembly)
 
-    # 1. Reads in a meraculous config file and outputs all of the associated config
-    #    files to $PWD/configs
 
-    merparser = MerParse(myArgs.inputConfig,
-                         myArgs.sweep,
-                         myArgs.slist,
-                         myArgs.maxProcs,
+    merparser = MerParse(myArgs.inputSource,
+                         gloTKDir = myArgs.gloTKDir,
+                         sweep = myArgs.sweep,
+                         sList = myArgs.slist,
+                         lnProcs = myArgs.maxProcs,
                          asPrefix = myArgs.prefix,
                          asSI = myArgs.index,
                          genus = myArgs.genus,
                          species = myArgs.species,
                          triplet = myArgs.triplet)
-    configPaths = merparser.sweeper_output()
+    subParams = merparser.sweeper_output()
+    configPaths = merparser.save_configs()
+    print(configPaths)
 
     #make the assemblies dir ONCE to avoid a race condition for os.makedirs()
-    cwd = os.path.abspath(os.getcwd())
-    allAssembliesDir = os.path.join(cwd, "assemblies")
+    allAssembliesDir = os.path.join(myArgs.gloTKDir, "gloTK_assemblies")
     if not os.path.exists(allAssembliesDir):
         os.makedirs(allAssembliesDir)
 
@@ -244,7 +266,8 @@ def main():
     for runName in configPaths:
         configPath = configPaths.get(runName)
         #strip off the .config off the end of the runName, derived from configPath
-        thisInstance = MerRunner(runName.strip(".config"), configPath, myArgs.cleanup)
+        thisInstance = MerRunner(runName.strip(".config"), configPath,
+                                 myArgs.cleanup, myArgs.gloTKDir)
         instances.append(thisInstance)
 
     if len(instances) == 0:

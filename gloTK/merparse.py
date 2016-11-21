@@ -61,7 +61,7 @@ class MerParse:
     Now the myPaths object contains a dict of run names and absolute paths for
         the config files.
     """
-    def __init__(self, inputFile, sweep=None, sList=None, lnProcs=0,
+    def __init__(self, inputFile, gloTKDir, sweep=None, sList=None, lnProcs=0,
                  asPrefix = "as", asSI = 0, genus = None, species = None,
                  triplet=False, diploidMode = None):
         # ----------------- Run triplet assembly -------------------------------
@@ -87,7 +87,7 @@ class MerParse:
             raise AttributeError("""{0} is not a currently supported sweep-able
             parameter. Please choose one of the following parameters or update
             the software at https://github.com/cypridina/gloTK. {1}""".format(
-                self.sweep, self.sweep_support))
+                self.sweep, self.sweep_support_int))
 
 
         #------------------------------Sweep List-------------------------------
@@ -128,7 +128,7 @@ class MerParse:
         self.as_s = species if species else None
 
         #-----------------------Directory Parameters----------------------------
-        self.cwd = os.getcwd() 
+        self.gloTKDir = gloTKDir
 
     def find_illegal_characters(self, genus, species):
         #only allow the user to input ASCII letters and digits (no punctuation)
@@ -230,7 +230,7 @@ class MerParse:
         """
 
         # 1. check if configs directory exists, if not, make it
-        config_dir = os.path.join(os.getcwd(), "configs")
+        config_dir = os.path.join(self.gloTKDir, "gloTK_configs")
         if not os.path.exists(config_dir):
             os.makedirs(config_dir)
 
