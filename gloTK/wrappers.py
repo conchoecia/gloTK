@@ -358,11 +358,11 @@ class Kmergenie(BaseWrapper):
 
 class TrimmomaticSE(BaseWrapper):
     """Input for trimmomatic is as follows:
-    java -jar trimmomatic-0.35.jar SE \
+     java -jar trimmomatic-0.35.jar SE \
      input.fq.gz output.fq.gz \
      ILLUMINACLIP:TruSeq3-SE:2:30:10 \
      LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
- 
+
     Options are as follows:
       ILLUMINACLIP:  - cut adapter and other illumina-specific seqs.
       SLIDINGWINDOW: - perform a sliding window trimming, cutting once the
@@ -379,7 +379,7 @@ class TrimmomaticSE(BaseWrapper):
     def __init__(self, **kwargs):
         self.init('trimmomaticSE', **kwargs)
         self.args = ["/usr/bin/java", '-jar', kwargs.get("jarPath"), "SE",
-                kwargs["input"], kwargs["output"]]
+                '-threads', kwargs.get("threads"), kwargs["input"], kwargs["output"]]
         optionals = ["ILLUMINACLIP", "CROP", "HEADCROP", "LEADING",
                      "TRAILING", "SLIDINGWINDOW", "MINLEN"]
         for option in optionals:
@@ -396,14 +396,15 @@ class TrimmomaticPE(BaseWrapper):
           ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 \
           LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
     """
-    def __init_(self, **kwargs):
+    def __init__(self, **kwargs):
         self.init('trimmomaticPE', **kwargs)
-        self.args = [kwargs.get("jarPath"), "PE", "-phred33",
+        self.args = ["/usr/bin/java", '-jar', kwargs.get("jarPath"), "PE",
+                     "-threads", kwargs.get("threads"),
                      kwargs["forwardPath"], kwargs["reversePath"],
                      kwargs["forwardOutFilePaired"], kwargs["forwardOutFileUnpaired"],
                      kwargs["reverseOutFilePaired"], kwargs["reverseOutFileUnpaired"]]
-        optionals = ["ILLUMINACLIP", "CROP", "HEADCROP", "LEADING",
-                     "TRAILING", "SLIDINGWINDOW", "MINLEN"]
+        optionals = ["ILLUMINACLIP", "SLIDINGWINDOW", "CROP", "HEADCROP",
+                     "LEADING", "TRAILING", "MINLEN"]
         for option in optionals:
             if kwargs.get(option):
                 self.args.append("{}:{}".format(option, kwargs[option]))

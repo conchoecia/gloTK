@@ -189,15 +189,10 @@ class CommandLine:
                               help = """input the path to the Trimmomatic jar
                               file""")
 
-
-
-
-
-
     def parse(self):
         self.args = self.parser.parse_args()
         # Verify that you have selected a valid option for readcleaner
-        cleanreadsOptions = ["SeqPrep2", "trimmomaticSE"]
+        cleanreadsOptions = ["SeqPrep2", "trimmomaticSE", "trimmomaticPE"]
           # The operation is the first item in the string, like SeqPrep2 or Trimmomatic
         selectedOperation = self.args.operation
           # The operation options are what to pass to the operation
@@ -214,7 +209,6 @@ class CommandLine:
 def main():
     # Parse the arguments
     parser = CommandLine()
-
     #this block from here: http://stackoverflow.com/a/4042861/5843327
     if len(sys.argv)==1:
         parser.parser.print_help()
@@ -265,6 +259,7 @@ def main():
             if options.operation == "trimmomaticSE":
                 #there are two instances to append here since the software
                 # only operates on one pair at a time
+                pairArgs["threads"] = readsYaml.params["local_num_procs"]
                 pairArgs["input"] = pairArgs["forwardPath"]
                 pairArgs["output"] = pairArgs["forwardOutFile"]
                 thisInstance = gloTK.wrappers.TrimmomaticSE(**pairArgs)
@@ -272,29 +267,32 @@ def main():
                 pairArgs["input"] = pairArgs["reversePath"]
                 pairArgs["output"] = pairArgs["reverseOutFile"]
                 thisInstance = gloTK.wrappers.TrimmomaticSE(**pairArgs)
-                instances.append(thisInstance)
             if options.operation == "trimmomaticPE":
                 #there are some special circumstances for PairedEnd Data
+                pairArgs["threads"] = readsYaml.params["local_num_procs"]
                 pairArgs["forwardOutFilePaired"] = pairArgs["forwardOutFile"]
-                pairArgs["forwardOutFileUnpaired"] = pairArgs["reverseOutFile"]
-                pairArgs["reverseOutFilePaired"] = pairArgs["forwardOutFile"].replace(".fastq.gz", ".unpaired.fastq.gz")
+                pairArgs["forwardOutFileUnpaired"] = pairArgs["forwardOutFile"].replace(".fastq.gz", ".unpaired.fastq.gz")
+                pairArgs["reverseOutFilePaired"] = pairArgs["reverseOutFile"]
                 pairArgs["reverseOutFileUnpaired"] = pairArgs["reverseOutFile"].replace(".fastq.gz",".unpaired.fastq.gz")
+                #don't actually add this to a queue
                 thisInstance = gloTK.wrappers.TrimmomaticPE(**pairArgs)
-                instances.append(thisInstance)
 
-    #process the reads
-    print("Using {} processors.".format(len(instances)))
-    # run the program for each instance
-    # pool size is the number of simultaneous runs for the server
-    threadpoolsize = len(instances)
-    if cpu_count() < threadpoolsize:
-        threadpoolsize = cpu_count()
-    print(threadpoolsize)
-    pool = ThreadPool(threadpoolsize)
-    print(len(instances))
-    results = pool.map(seqProcess_run_helper, instances)
-    pool.close()
-    pool.join()
+
+
+    #process the reads, this block is only used for parallelization for seqprep at the moment
+    if len(instances) > 0:
+        print("Using {} processors.".format(len(instances)))
+        # run the program for each instance
+        # pool size is the number of simultaneous runs for the server
+        threadpoolsize = len(instances)
+        if cpu_count() < threadpoolsize:
+            threadpoolsize = cpu_count()
+        print(threadpoolsize)
+        pool = ThreadPool(threadpoolsize)
+        print(len(instances))
+        results = pool.map(seqProcess_run_helper, instances)
+        pool.close()
+        pool.join()
 
     #Make a new ConfigParse object to modify the glob and reads
     newYaml = readsYaml.sym_reads_new_config(newReadsDir, sym=False, mv=False)
