@@ -380,33 +380,31 @@ class TrimmomaticSE(BaseWrapper):
         self.init('trimmomaticSE', **kwargs)
         self.args = ["/usr/bin/java", '-jar', kwargs.get("jarPath"), "SE",
                 kwargs["input"], kwargs["output"]]
-        optionals = ["ILLUMINACLIP", "LEADING", "TRAILING", "SLIDINGWINDOW",
-                     "CROP", "HEADCROP", "MINLEN"]
+        optionals = ["ILLUMINACLIP", "CROP", "HEADCROP", "LEADING",
+                     "TRAILING", "SLIDINGWINDOW", "MINLEN"]
         for option in optionals:
             if kwargs.get(option):
                 self.args.append("{}:{}".format(option, kwargs[option]))
         self.run()
 
-# class TrimmomaticPE(BaseWrapper):
-#     """Input for trimmomatic is as follows:
-#        java -jar trimmomatic-0.35.jar PE -phred33 \
-#          input_forward.fq.gz input_reverse.fq.gz \
-#          output_forward_paired.fq.gz output_forward_unpaired.fq.gz \
-#          output_reverse_paired.fq.gz output_reverse_unpaired.fq.gz \
-#          ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 \
-#          LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
-#     """
-#     def __init_(self, **kwargs):
-#         self.init('kmergenie', **kwargs)
-#         self.args = [kwargs.get("jarPath"), "PE", "-phred33",
-#                 kwargs["forwardPath"], kwargs["reversePath"],
-#                 kwargs["forwardOutFilePaired"], kwargs["forwardOutFileUnpaired"],
-#                 kwargs["reverseOutFilePaired"], kwargs["reverseOutFileUnpaired"]]
-#         optionals = ["ILLUMINACLIP", "LEADING", "TRAILING", "SLIDINGWINDOW"]
-#                 kwargs.get("qualCutoff", 13),
-#                 kwargs.get("lenCutoff", 30),
-#                 kwargs.get("forAdapter", "AGATCGGAAGAGCACACGTC"),
-#                 kwargs.get("revAdapter", "AGATCGGAAGAGCGTCGTGT"),
-#                 kwargs.get("editReject", 1),
-#                 kwargs.get("forwardReject", "AGATCGGAAGAGCACACGTC"),
-#                 kwargs.get("reverseReject", "AGATCGGAAGAGCGTCGTGT")]
+class TrimmomaticPE(BaseWrapper):
+    """Input for trimmomatic is as follows:
+       java -jar trimmomatic-0.35.jar PE -phred33 \
+          input_forward.fq.gz input_reverse.fq.gz \
+          output_forward_paired.fq.gz output_forward_unpaired.fq.gz \
+          output_reverse_paired.fq.gz output_reverse_unpaired.fq.gz \
+          ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 \
+          LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
+    """
+    def __init_(self, **kwargs):
+        self.init('trimmomaticPE', **kwargs)
+        self.args = [kwargs.get("jarPath"), "PE", "-phred33",
+                     kwargs["forwardPath"], kwargs["reversePath"],
+                     kwargs["forwardOutFilePaired"], kwargs["forwardOutFileUnpaired"],
+                     kwargs["reverseOutFilePaired"], kwargs["reverseOutFileUnpaired"]]
+        optionals = ["ILLUMINACLIP", "CROP", "HEADCROP", "LEADING",
+                     "TRAILING", "SLIDINGWINDOW", "MINLEN"]
+        for option in optionals:
+            if kwargs.get(option):
+                self.args.append("{}:{}".format(option, kwargs[option]))
+        self.run()

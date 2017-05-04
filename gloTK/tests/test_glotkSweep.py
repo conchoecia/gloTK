@@ -64,9 +64,9 @@ class assembly_test_case(unittest.TestCase):
     """Tests a swept assembly"""
     def setUp(self):
         self.testRunDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "phix174Test")
-        self.configDir = os.path.join(self.testRunDir, "configs")
-        self.assemDir = os.path.join(self.testRunDir , "assemblies")
-        self.reportDir = os.path.join(self.testRunDir, "reports")
+        self.configDir = os.path.join(self.testRunDir, "gloTK_configs")
+        self.assemDir = os.path.join(self.testRunDir , "gloTK_assemblies")
+        self.reportDir = os.path.join(self.testRunDir, "gloTK_reports")
         self.outputParentDir = os.path.join(os.path.abspath(os.path.dirname(__file__)))
         self.read1 = os.path.join(self.testRunDir, "reads/SRR353630_2500_1.fastq.gz")
         self.read2 = os.path.join(self.testRunDir, "reads/SRR353630_2500_2.fastq.gz")
@@ -77,16 +77,20 @@ class assembly_test_case(unittest.TestCase):
     def test_sweeps(self):
         """Make sure that the program runs without error"""
 
-        print("in sweeps, file is:")
-        print(__file__)
-        print("in sweeps, testRun Dir is:")
-        print(self.testRunDir)
+        # print("in sweeps, file is:")
+        # print(__file__)
+        # print("in sweeps, testRun Dir is:")
+        # print(self.testRunDir)
         # print( __file__)
         # print( os.path.join(os.path.dirname(__file__), '..'))
         # print( os.path.dirname(os.path.realpath(__file__)))
         # print( os.path.abspath(os.path.dirname(__file__)))
 
         os.chdir(self.testRunDir)
+        #Make this directory to trick the test into thinking it is in an already-initialized gloTKdir
+        if not os.path.exists("gloTK_reads"):
+            os.mkdir("gloTK_reads")
+
         #make sure symlink for reads exists
         if not os.path.exists(self.assemDir):
             os.makedirs(self.assemDir)
@@ -188,15 +192,18 @@ class assembly_test_case(unittest.TestCase):
         shutil.rmtree(self.assemDir)
         shutil.rmtree(self.configDir)
         shutil.rmtree(self.reportDir)
+        shutil.rmtree("gloTK_reads")
 
-        print("at end, file is:")
-        print(__file__)
-        print("in sweeps, testRun Dir is:")
-        print(self.testRunDir)
-        print( __file__)
+        # print("at end, file is:")
+        # print(__file__)
+        # print("in sweeps, testRun Dir is:")
+        # print(self.testRunDir)
+        # print( __file__)
+
         # print( os.path.join(os.path.dirname(__file__), '..'))
         # print( os.path.dirname(os.path.realpath(__file__)))
         # print( os.path.abspath(os.path.dirname(__file__)))
+
 
 
 if __name__ == '__main__':

@@ -66,7 +66,9 @@ def safe_mkdir(path):
     if os.path.isfile(path):
         die("'{0}' is a regular file: can't overwrite" % path)
     elif os.path.isdir(path):
-        info("directory '%s' already exists" % path)
+        #This printed out too many times for anyone's good.
+        #info("directory '%s' already exists" % path)
+        pass
     else:
         info("creating directory '%s'" % path)
         try:
@@ -92,6 +94,29 @@ def dir_is_glotk(path):
         return True
     else:
         return False
+
+def fastq_append(filename, appendThis):
+    """This removes the ".fastq.gz", or other ".A.B" from a file,
+    appends something "_appendThis" to the file name, then replaces the ".A.B"
+    """
+    dirname = os.path.dirname(filename)
+    basename = os.path.basename(filename)
+    split = basename.split(".")
+    #There are two circumstances here. One is where this is a fastq.gz and one
+    # where the file is just a fastq. Determine which then proceed
+    if split[-1] == "gz":
+        gzipped = True
+        fileType = split[-2]
+    else:
+        gzipped = False
+        fileType = split[-1]
+    if fileType not in ["fastq", "fq"]:
+        raise ValueError("This is not a fastq file: {}".format(basename))
+    if gzipped:
+        return os.path.join(dirname, "{}_{}.{}".format("".join(split[:-2]), appendThis, ".".join(split[-2:])))
+    else:
+        return os.path.join(dirname, "{}_{}.{}".format("".join(split[:-1]), appendThis, split[-1]))
+
 
 def reads_and_yaml_exist(gloTKDir, readNum):
     """check that a yaml file and its corresponding reads exist.
@@ -147,6 +172,7 @@ def die(*messages):
 
 
 def fastx_basename(path):
+    """This needs a description"""
     split = os.path.splitext(os.path.basename(path))
     noZone = [".fastq",".fq",".fasta", ".fa",
                ".gz",".gzip", ".gzipped"]

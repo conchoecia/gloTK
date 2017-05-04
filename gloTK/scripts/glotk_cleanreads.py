@@ -164,6 +164,32 @@ class CommandLine:
                               required = True,
                               help = """input the path to the Trimmomatic jar
                               file""")
+        PEParser = subparsers.add_parser("trimmomaticPE", help='trimmomatic help')
+        PEParser.add_argument("--SLIDINGWINDOW",
+                              help = """perform a sliding window trimming, cutting
+                              once the avg quality within the window falls below a
+                              threshold.""")
+        PEParser.add_argument("--LEADING",
+                              help = """cut bases off the start of a read,
+                              if below a threshold quality""")
+        PEParser.add_argument("--TRAILING",
+                              help = """cut bases off the end of a read, if below
+                              a threshold quality""")
+        PEParser.add_argument("--CROP",
+                              help = """cut the read to a specified length""")
+        PEParser.add_argument("--HEADCROP",
+                              help = """cut the specified number of bases from the
+                              start of the read""")
+        PEParser.add_argument("--MINLEN",
+                              help = """drop the read if it is below a specified
+                              length""")
+        PEParser.add_argument("--jarPath",
+                              type = str,
+                              required = True,
+                              help = """input the path to the Trimmomatic jar
+                              file""")
+
+
 
 
 
@@ -246,6 +272,14 @@ def main():
                 pairArgs["input"] = pairArgs["reversePath"]
                 pairArgs["output"] = pairArgs["reverseOutFile"]
                 thisInstance = gloTK.wrappers.TrimmomaticSE(**pairArgs)
+                instances.append(thisInstance)
+            if options.operation == "trimmomaticPE":
+                #there are some special circumstances for PairedEnd Data
+                pairArgs["forwardOutFilePaired"] = pairArgs["forwardOutFile"]
+                pairArgs["forwardOutFileUnpaired"] = pairArgs["reverseOutFile"]
+                pairArgs["reverseOutFilePaired"] = pairArgs["forwardOutFile"].replace(".fastq.gz", ".unpaired.fastq.gz")
+                pairArgs["reverseOutFileUnpaired"] = pairArgs["reverseOutFile"].replace(".fastq.gz",".unpaired.fastq.gz")
+                thisInstance = gloTK.wrappers.TrimmomaticPE(**pairArgs)
                 instances.append(thisInstance)
 
     #process the reads
